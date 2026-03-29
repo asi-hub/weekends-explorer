@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Good Weekend · London</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0d1035;--teal:#7dd4c8;--red:#ff2b52;--yellow:#f4ed04;--bg:#f5f3ee;--card:#fff;--muted:#7a7d96;--border:rgba(13,16,53,0.1)}
+body{background:var(--bg);font-family:'Instrument Sans',sans-serif;color:var(--navy);min-height:100vh;overflow-x:hidden}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+#screen-apikey.active{display:flex}
+
+/* ── SHARED COMPONENTS ── */
+.pill{padding:.42rem .92rem;border-radius:999px;border:1px solid var(--border);font-size:.92rem;cursor:pointer;background:#fafaf8;color:var(--navy);transition:all .15s;user-select:none;white-space:nowrap;font-family:'Instrument Sans',sans-serif}
+.pill:hover{border-color:var(--teal)}
+.pill.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip-group{display:flex;flex-wrap:wrap;gap:7px}
+.toggle-switch{width:38px;height:22px;background:#e0e0e0;border-radius:999px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-switch.on{background:var(--teal)}
+.toggle-switch::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s}
+.toggle-switch.on::after{left:19px}
+.toggle-row{display:flex;align-items:center;gap:10px}
+.toggle-row .tlabel{font-size:.88rem;color:var(--navy)}
+.form-label{font-size:.73rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;display:block}
+.form-input{width:100%;padding:.7rem .9rem;border:1px solid var(--border);border-radius:12px;font-size:.88rem;color:var(--navy);font-family:'Instrument Sans',sans-serif;background:#fafaf8;outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--teal);background:#fff}
+.form-textarea{width:100%;padding:.7rem .9rem;border:1px solid var(--border);border-radius:12px;font-size:.88rem;color:var(--navy);font-family:'Instrument Sans',sans-serif;background:#fafaf8;resize:vertical;min-height:80px;outline:none;transition:border-color .15s;line-height:1.5}
+.form-textarea:focus{border-color:var(--teal);background:#fff}
+.divider{height:1px;background:var(--border);margin:1.1rem 0}
+.scale-row{display:flex;gap:5px}
+.scale-btn{flex:1;padding:.55rem .25rem;border:1px solid var(--border);border-radius:10px;background:#fafaf8;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--muted);font-family:'Instrument Sans',sans-serif;transition:all .15s;text-align:center}
+.scale-btn:hover{border-color:var(--teal)}
+.scale-btn.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.scale-labels{display:flex;justify-content:space-between;font-size:.73rem;color:var(--muted);margin-top:.3rem}
+
+/* ── FILE:// WARNING BANNER ── */
+#file-warning{display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#ff2b52;color:#fff;padding:.75rem 1.25rem;font-size:.8rem;line-height:1.55;text-align:center}
+#file-warning strong{font-weight:600;display:block;margin-bottom:.2rem;font-size:.85rem}
+#file-warning code{background:rgba(0,0,0,.25);padding:.15rem .4rem;border-radius:5px;font-family:monospace;font-size:.82rem;letter-spacing:.02em;user-select:all;cursor:pointer}
+#file-warning.show{display:block}
+.file-warn-spacer{display:none;height:80px}
+.file-warn-spacer.show{display:block}
+
+/* ── API KEY SCREEN ── */
+#screen-apikey{flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1.5rem;background:linear-gradient(135deg,#0c0f2e 0%,var(--navy) 55%,#0d1540 100%)}
+.ak-logo{display:flex;align-items:center;gap:10px;margin-bottom:2.5rem}
+.ak-dot{width:10px;height:10px;background:var(--red);border-radius:50%}
+.ak-logo-text{font-family:'Playfair Display',serif;font-size:1.25rem;color:#fff;font-weight:400}
+.ak-card{width:100%;max-width:400px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:2rem 1.75rem}
+.ak-card h2{font-family:'Playfair Display',serif;font-size:1.7rem;color:#fff;margin-bottom:.5rem;line-height:1.2}
+.ak-card p{font-size:.82rem;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:1.75rem}
+.ak-input-wrap{position:relative;margin-bottom:1rem}
+.ak-input{width:100%;padding:.78rem 2.75rem .78rem .95rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:13px;color:#fff;font-size:.88rem;font-family:'Instrument Sans',sans-serif;outline:none;transition:border-color .15s;letter-spacing:.02em}
+.ak-input:focus{border-color:var(--teal)}
+.ak-input::placeholder{color:rgba(255,255,255,.25)}
+.ak-eye{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.35);cursor:pointer;font-size:1rem;padding:0;line-height:1}
+.ak-err{font-size:.75rem;color:var(--red);margin-bottom:.75rem;display:none}
+.btn-ak{width:100%;padding:.88rem;background:var(--teal);color:var(--navy);border:none;border-radius:14px;font-size:.95rem;font-weight:500;font-family:'Instrument Sans',sans-serif;cursor:pointer;transition:transform .15s,opacity .2s}
+.btn-ak:hover{transform:translateY(-1px)}
+.btn-ak:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ak-hint{font-size:.72rem;color:rgba(255,255,255,.25);text-align:center;margin-top:.85rem;line-height:1.55}
+
+/* ── ONBOARDING SCREEN ── */
+#screen-onboarding{background:var(--bg)}
+.ob-topbar{background:linear-gradient(135deg,#0c0f2e 0%,var(--navy) 55%,#0d1540 100%);padding:1.1rem 1.5rem .85rem;position:sticky;top:0;z-index:10}
+.ob-topbar-row{display:flex;align-items:center;gap:8px;margin-bottom:.85rem}
+.ob-dot{width:8px;height:8px;background:var(--red);border-radius:50%}
+.ob-topbar-row span{font-family:'Playfair Display',serif;font-size:1rem;color:#fff;font-weight:400}
+.ob-progress-track{height:3px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden}
+.ob-progress-fill{height:100%;background:var(--teal);border-radius:999px;transition:width .4s ease}
+.ob-body{padding:1.5rem 1.25rem 9rem}
+.ob-step{display:none}
+.ob-step.active{display:block}
+.ob-step-label{font-size:.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+.ob-step-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--navy);margin-bottom:.35rem;line-height:1.2}
+.ob-step-sub{font-size:.83rem;color:var(--muted);line-height:1.55;margin-bottom:1.6rem}
+.ob-field{margin-bottom:1.3rem}
+.ob-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ob-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ob-footer{position:fixed;bottom:0;left:0;right:0;padding:.85rem 1.25rem 1.5rem;background:linear-gradient(to top,var(--bg) 72%,transparent);display:flex;gap:8px;z-index:10}
+.btn-ob-back{width:46px;height:46px;border-radius:13px;border:1px solid var(--border);background:#fff;color:var(--navy);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s}
+.btn-ob-back:hover{border-color:var(--navy)}
+.btn-ob-next{flex:1;padding:.88rem;background:var(--navy);color:#fff;border:none;border-radius:13px;font-size:.92rem;font-weight:500;font-family:'Instrument Sans',sans-serif;cursor:pointer;transition:background .2s,transform .15s}
+.btn-ob-next:hover{background:#1a1f5e;transform:translateY(-1px)}
+.btn-ob-finish{flex:1;padding:.88rem;background:var(--teal);color:var(--navy);border:none;border-radius:13px;font-size:.92rem;font-weight:500;font-family:'Instrument Sans',sans-serif;cursor:pointer;transition:transform .15s}
+.btn-ob-finish:hover{transform:translateY(-1px)}
+
+/* Range slider */
+.slider-wrap{padding:.2rem 0 .2rem}
+.range-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:999px;outline:none;cursor:pointer;background:linear-gradient(to right,var(--teal) var(--pct,33%),var(--border) var(--pct,33%))}
+.range-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--navy);border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.22);cursor:pointer}
+.slider-val{display:inline-block;padding:.18rem .55rem;background:var(--navy);color:#fff;border-radius:999px;font-size:.75rem;font-weight:500;margin-bottom:.4rem}
+.slider-labels{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:.4rem}
+
+/* ── MAIN SCREEN ── */
+#screen-main{background:var(--bg)}
+.topbar{display:flex;align-items:center;padding:1rem 1.5rem;background:linear-gradient(135deg,#0c0f2e 0%,var(--navy) 55%,#0d1540 100%);position:sticky;top:0;z-index:10}
+.topbar-spacer{flex:1}
+.topbar-logo{display:flex;align-items:center;gap:12px}
+.top-dot{width:16px;height:16px;background:var(--red);border-radius:50%}
+.topbar h1{font-family:'Playfair Display',serif;font-size:2.2rem;color:#fff;font-weight:400;line-height:1}
+.topbar-right{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.btn-profile{position:relative;width:36px;height:36px;border:1px solid rgba(255,255,255,.2);border-radius:50%;font-size:1rem;color:rgba(255,255,255,.8);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-profile:hover{border-color:var(--teal);color:var(--teal)}
+.btn-profile .prof-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;background:#f4ed04;border-radius:50%;border:1.5px solid var(--navy);display:none}
+.btn-profile .prof-dot.show{display:block}
+.btn-saved-count{padding:.3rem .7rem;border:1px solid rgba(255,255,255,.2);border-radius:999px;font-size:.75rem;color:rgba(255,255,255,.8);background:none;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .2s;display:none}
+.btn-saved-count:hover{border-color:var(--teal);color:var(--teal)}
+.btn-saved-count.show{display:block}
+.mode-bar{display:flex;background:var(--navy);padding:0 1.5rem .85rem}
+.mode-btn{flex:1;padding:.6rem 1rem;text-align:center;font-size:.92rem;cursor:pointer;border:none;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);font-family:'Instrument Sans',sans-serif;transition:all .2s}
+.mode-btn:first-child{border-radius:12px 0 0 12px}
+.mode-btn:last-child{border-radius:0 12px 12px 0}
+.mode-btn.active{background:var(--teal);color:var(--navy);font-weight:500}
+.main{padding:1.25rem 1.25rem 6rem}
+.filters-card{background:var(--card);border-radius:18px;padding:1.25rem;border:1px solid var(--border);margin-bottom:1rem}
+.filter-divider{height:1px;background:var(--border);margin:.85rem 0}
+.filter-label{font-size:.8rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;display:block}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap}
+.date-row{display:flex;gap:8px;flex-wrap:wrap}
+.date-pill{padding:.42rem .92rem;border-radius:999px;border:1px solid var(--border);font-size:.92rem;cursor:pointer;background:#fafaf8;color:var(--navy);transition:all .15s;user-select:none;white-space:nowrap}
+.date-pill.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* With-kid row — prominent, moved to top */
+.with-kid-row{display:flex;align-items:center;gap:12px;background:rgba(125,212,200,0.08);border-radius:12px;padding:.6rem .85rem;margin-bottom:.85rem}
+.with-kid-row .toggle-switch{width:44px;height:26px}
+.with-kid-row .toggle-switch::after{width:20px;height:20px;top:3px;left:3px}
+.with-kid-row .toggle-switch.on::after{left:21px}
+.toggle-label{font-size:.88rem;color:var(--navy);font-weight:500}
+
+.btn-search{width:100%;padding:.85rem;background:var(--navy);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:500;cursor:pointer;font-family:'Instrument Sans',sans-serif;margin-top:.85rem;transition:background .2s,transform .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-search:hover{background:#1a1f5e;transform:translateY(-1px)}
+.btn-search:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.surprise-card{background:var(--navy);border-radius:18px;padding:1.5rem;text-align:center;margin-bottom:1rem}
+.surprise-card h2{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;margin-bottom:.4rem}
+.surprise-card p{font-size:.83rem;color:rgba(255,255,255,.6);line-height:1.55;margin-bottom:1.25rem}
+.surprise-options{display:flex;gap:10px}
+.surprise-opt{flex:1;padding:1rem .75rem;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);cursor:pointer;transition:all .2s;text-align:center}
+.surprise-opt:hover{background:rgba(125,212,200,.15);border-color:var(--teal)}
+.surprise-opt.selected{background:rgba(125,212,200,.2);border-color:var(--teal)}
+.surprise-opt-icon{font-size:1.4rem;margin-bottom:.4rem}
+.surprise-opt-title{font-size:.8rem;font-weight:500;color:#fff;margin-bottom:.2rem}
+.surprise-opt-sub{font-size:.72rem;color:rgba(255,255,255,.5);line-height:1.4}
+.btn-surprise{width:100%;padding:.75rem;background:var(--teal);color:var(--navy);border:none;border-radius:14px;font-size:.9rem;font-weight:500;cursor:pointer;font-family:'Instrument Sans',sans-serif;margin-top:1rem;transition:transform .15s}
+.btn-surprise:hover{transform:translateY(-1px)}
+.btn-surprise:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.surprise-when-row{margin-top:1.1rem;margin-bottom:.1rem}
+.surprise-when-label{display:block;font-size:.72rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.5rem}
+#surprise-when-group .date-pill{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.65)}
+#surprise-when-group .date-pill:hover{border-color:var(--teal);color:#fff}
+#surprise-when-group .date-pill.on{background:var(--teal);border-color:var(--teal);color:var(--navy);font-weight:500}
+.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem}
+.results-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--navy)}
+.results-count{font-size:.92rem;color:var(--muted)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem}
+.rc-name{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--navy);line-height:1.25}
+.rc-badge{padding:.25rem .6rem;border-radius:999px;font-size:.74rem;font-weight:500;white-space:nowrap;flex-shrink:0;margin-left:8px}
+.badge-nature{background:#e8f4f1;color:#0a6b57}
+.badge-food{background:#fef3e2;color:#92520a}
+.badge-culture{background:#ede9fe;color:#5b21b6}
+.badge-kids{background:#fce7f3;color:#9d174d}
+.badge-event{background:#fee2e2;color:#991b1b}
+.badge-surprise{background:rgba(244,237,4,.2);color:#7a6e00;border:1px solid rgba(244,237,4,.4)}
+.badge-wellness{background:#fdf2f8;color:#9d174d}
+.badge-canal{background:#e0f2fe;color:#075985}
+.badge-theatre{background:#f3f4f6;color:#1f2937}
+.badge-farm{background:#f0fdf4;color:#166534}
+.badge-swimming{background:#e0f2fe;color:#075985}
+.badge-vintage{background:#fef9c3;color:#854d0e}
+.badge-architecture{background:#f1f5f9;color:#334155}
+.badge-popup{background:#fff7ed;color:#9a3412}
+.badge-film{background:#1a1a2e;color:#a5b4fc}
+.badge-sport{background:#fef2f2;color:#991b1b}
+.badge-pub{background:#fef3c7;color:#92400e}
+.badge-music{background:#ede9fe;color:#6d28d9}
+.badge-comedy{background:#fce7f3;color:#be185d}
+.badge-heritage{background:#fef9c3;color:#713f12}
+.badge-walking{background:#dcfce7;color:#166534}
+.badge-botanical{background:#fdf4ff;color:#7e22ce}
+.badge-games{background:#fff7ed;color:#c2410c}
+.badge-shopping{background:#f0fdfa;color:#0f766e}
+.badge-desserts{background:#fdf2f8;color:#db2777}
+.badge-neighbourhood{background:#fff1f2;color:#be123c}
+.badge-workshops{background:#eff6ff;color:#1d4ed8}
+.badge-daytrip{background:#e0f2fe;color:#0369a1}
+.badge-familyfun{background:#fefce8;color:#a16207}
+.rc-desc{font-size:.96rem;color:var(--muted);line-height:1.6;margin-bottom:.85rem}
+.rc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem}
+.meta-chip{display:flex;align-items:center;gap:4px;padding:.28rem .65rem;border-radius:999px;background:#f5f3ee;font-size:.86rem;color:var(--navy)}
+.rc-footer{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.rc-toddler{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:4px;flex:1}
+.toddler-stars{color:var(--teal);letter-spacing:-1px}
+.rc-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.btn-save{padding:.32rem .75rem;border-radius:999px;border:1px solid var(--border);background:none;font-size:.78rem;cursor:pointer;color:var(--navy);font-family:'Instrument Sans',sans-serif;transition:all .15s}
+.btn-save:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-save.saved{background:var(--teal);color:var(--navy);border-color:var(--teal)}
+.btn-been{padding:.32rem .75rem;border-radius:999px;border:1px solid var(--border);background:none;font-size:.78rem;cursor:pointer;color:var(--muted);font-family:'Instrument Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.btn-been:hover{border-color:#10b981;color:#059669}
+.btn-been.been{background:#ecfdf5;color:#059669;border-color:#a7f3d0}
+.btn-replace{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:rgba(13,16,53,.04);color:var(--muted);font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;line-height:1}
+.btn-replace:hover{background:var(--navy);color:#fff;border-color:var(--navy);transform:rotate(-30deg)}
+.btn-replace:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.result-card{background:var(--card);border-radius:18px;padding:1.25rem;border:1px solid var(--border);border-left:3px solid transparent;margin-bottom:.85rem;animation:fadeUp .35s ease forwards;opacity:0;position:relative;transition:transform .2s ease,box-shadow .2s ease,border-color .15s ease}
+.result-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(13,16,53,.1);border-color:rgba(13,16,53,.2)}
+.arc-card{background:var(--card);border-radius:18px;border:1px solid var(--border);overflow:hidden;margin-bottom:.85rem;animation:fadeUp .35s ease forwards;opacity:0}
+.arc-header{background:var(--navy);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:10px}
+.arc-header h3{font-family:'Playfair Display',serif;font-size:1rem;color:#fff;font-weight:400}
+.arc-area{font-size:.75rem;color:rgba(255,255,255,.5);margin-top:2px}
+.arc-stops{padding:1rem 1.25rem}
+.arc-stop{display:flex;gap:12px;margin-bottom:1rem;position:relative}
+.arc-stop:last-child{margin-bottom:0}
+.arc-stop::before{content:'';position:absolute;left:9px;top:20px;bottom:-1rem;width:1px;background:var(--border)}
+.arc-stop:last-child::before{display:none}
+.arc-dot{width:20px;height:20px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--navy);font-weight:500}
+.arc-time{font-size:.75rem;color:var(--muted);margin-bottom:2px}
+.arc-place{font-size:.88rem;font-weight:500;color:var(--navy)}
+.arc-note{font-size:.83rem;color:var(--muted);line-height:1.5;margin-top:2px}
+.loading-state{text-align:center;padding:2.5rem 1rem}
+.loading-dots{display:flex;justify-content:center;gap:6px;margin-bottom:1rem}
+.loading-dots span{width:8px;height:8px;background:var(--teal);border-radius:50%;animation:blink 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.loading-state p{font-size:.9rem;color:var(--muted)}
+.empty-state{text-align:center;padding:2.5rem 1rem}
+.empty-state p{font-size:.9rem;color:var(--muted)}
+
+/* ── PROFILE COMPLETENESS NUDGE ── */
+.profile-nudge{background:#fffbea;border:1px solid var(--teal);border-radius:14px;padding:.9rem 1rem;margin-top:.85rem;display:flex;align-items:flex-start;gap:10px;animation:fadeUp .35s ease forwards;opacity:0}
+.profile-nudge p{font-size:.83rem;color:#5a4e00;line-height:1.55;flex:1}
+.profile-nudge p strong{color:#3a3200}
+.btn-nudge-dismiss{background:none;border:none;cursor:pointer;font-size:1rem;color:#a09600;flex-shrink:0;padding:0;line-height:1;margin-top:.1rem}
+
+/* ── SETTINGS BOTTOM SHEET ── */
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;z-index:100;transition:opacity .3s}
+.sheet-overlay.open{opacity:1;pointer-events:all}
+.settings-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-radius:24px 24px 0 0;z-index:101;max-height:88vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,0,.15,1)}
+.settings-sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:999px;margin:.9rem auto .2rem;flex-shrink:0}
+.sheet-top{padding:.6rem 1.5rem 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.sheet-top h2{font-family:'Playfair Display',serif;font-size:1.1rem}
+.sheet-close{width:32px;height:32px;border-radius:50%;background:rgba(13,16,53,.08);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--navy)}
+.sheet-tabs{display:flex;padding:.65rem 1.5rem 0;flex-shrink:0;border-bottom:1px solid var(--border)}
+.sheet-tab{flex:1;padding:.55rem;text-align:center;font-size:.82rem;cursor:pointer;border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;font-family:'Instrument Sans',sans-serif;transition:all .15s;margin-bottom:-1px}
+.sheet-tab.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:500}
+.sheet-content{flex:1;overflow-y:auto;padding:1.25rem 1.5rem 2.5rem}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* Profile view */
+.prof-section{background:#fff;border-radius:16px;border:1px solid var(--border);margin-bottom:.85rem;overflow:hidden}
+.prof-section-title{font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:.75rem 1rem .5rem;border-bottom:1px solid var(--border);background:#fafaf8}
+.prof-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.6rem 1rem;border-bottom:1px solid var(--border);font-size:.92rem}
+.prof-row:last-child{border-bottom:none}
+.prof-key{color:var(--muted);flex:0 0 42%;font-size:.88rem}
+.prof-val{color:var(--navy);text-align:right;flex:1;line-height:1.5;font-weight:500}
+.prof-chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+.prof-chip{font-size:.78rem;padding:.25rem .6rem;background:var(--bg);border:1px solid var(--border);border-radius:999px;color:var(--navy)}
+.btn-goto-edit{width:100%;padding:.8rem;margin-top:1rem;background:var(--navy);color:#fff;border:none;border-radius:13px;font-size:.92rem;font-weight:500;font-family:'Instrument Sans',sans-serif;cursor:pointer;transition:background .2s}
+.btn-goto-edit:hover{background:#1a1f5e}
+
+/* Profile chat */
+.chat-intro{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;padding:.75rem;background:#fff;border-radius:13px;border:1px solid var(--border)}
+.chat-messages{min-height:80px;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:1rem}
+.chat-msg{font-size:.88rem;line-height:1.55;max-width:88%}
+.chat-msg.user{align-self:flex-end;background:var(--navy);color:#fff;padding:.55rem .85rem;border-radius:16px 16px 4px 16px}
+.chat-msg.assistant{align-self:flex-start;background:#fff;color:var(--navy);padding:.55rem .85rem;border-radius:16px 16px 16px 4px;border:1px solid var(--border)}
+.chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.85rem}
+.chat-suggestion-chip{padding:.32rem .72rem;border-radius:999px;border:1px solid var(--teal);background:rgba(125,212,200,.08);color:var(--navy);font-size:.78rem;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .15s}
+.chat-suggestion-chip:hover{background:rgba(125,212,200,.2)}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{flex:1;padding:.65rem .9rem;border:1px solid var(--border);border-radius:12px;font-size:.85rem;font-family:'Instrument Sans',sans-serif;color:var(--navy);background:#fafaf8;outline:none;transition:border-color .15s}
+.chat-input:focus{border-color:var(--teal);background:#fff}
+.btn-send{width:42px;height:42px;flex-shrink:0;background:var(--navy);color:#fff;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:background .15s}
+.btn-send:hover{background:#1a1f5e}
+.btn-send:disabled{opacity:.5;cursor:not-allowed}
+.changes-preview{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem}
+.cp-title{font-size:.72rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.65rem}
+.cp-row{font-size:.8rem;padding:.32rem 0;border-bottom:1px solid var(--border)}
+.cp-row:last-of-type{border-bottom:none}
+.cp-key{font-weight:500;color:var(--navy);margin-bottom:.1rem}
+.cp-old{color:var(--muted);text-decoration:line-through;font-size:.75rem;margin-right:.4rem}
+.cp-new{color:#0a6b57;font-size:.8rem}
+.cp-actions{display:flex;gap:8px;margin-top:.8rem}
+.btn-apply{flex:1;padding:.6rem;background:var(--teal);color:var(--navy);border:none;border-radius:10px;font-size:.85rem;font-weight:500;font-family:'Instrument Sans',sans-serif;cursor:pointer}
+.btn-dismiss{padding:.6rem .9rem;background:none;border:1px solid var(--border);border-radius:10px;font-size:.85rem;font-family:'Instrument Sans',sans-serif;color:var(--muted);cursor:pointer}
+
+/* ── SAVED ITEMS SHEET ── */
+.saved-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-radius:24px 24px 0 0;z-index:101;max-height:88vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,0,.15,1)}
+.saved-sheet.open{transform:translateY(0)}
+.saved-card{background:var(--card);border-radius:18px;padding:1.25rem;border:1px solid var(--border);margin-bottom:.85rem}
+.btn-remove{padding:.35rem .8rem;border-radius:999px;border:1px solid var(--red);background:none;font-size:.8rem;cursor:pointer;color:var(--red);font-family:'Instrument Sans',sans-serif;transition:all .15s}
+.btn-remove:hover{background:var(--red);color:#fff}
+.btn-heart{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:none;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;line-height:1}
+.btn-heart:hover{border-color:#f43f5e;transform:scale(1.15)}
+.btn-heart.liked{background:#fff1f2;border-color:#fecdd3}
+.saved-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:.25rem 0 .65rem;margin-top:.75rem}
+.saved-section-hdr:first-child{margin-top:0}
+.saved-section-hdr-label{font-size:.78rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.saved-section-hdr-count{font-size:.75rem;background:var(--navy);color:#fff;border-radius:999px;padding:.1rem .5rem}
+.saved-section-divider{height:1px;background:var(--border);margin:1rem 0}
+/* Category grouped results */
+.cat-results-group{margin-bottom:1.5rem}
+.cat-results-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.75rem;padding:0 .1rem}
+.cat-results-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--navy)}
+.cat-results-opts{font-size:.8rem;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:.15rem .55rem}
+.cat-results-or{text-align:center;font-size:.75rem;color:var(--muted);letter-spacing:.06em;margin:-.2rem 0 .4rem;position:relative}
+.cat-results-or::before,.cat-results-or::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border)}
+.cat-results-or::before{left:0}.cat-results-or::after{right:0}
+
+/* ── CATEGORY ACCENT BORDERS ── */
+.result-card[data-cat*="nature"],.result-card[data-cat*="parks"],.result-card[data-cat*="hidden"],.result-card[data-cat*="farm"],.result-card[data-cat*="garden"]{border-left-color:#0a6b57}
+.result-card[data-cat*="food"],.result-card[data-cat*="coffee"],.result-card[data-cat*="market"],.result-card[data-cat*="pop-up"],.result-card[data-cat*="supper"]{border-left-color:#92520a}
+.result-card[data-cat*="culture"],.result-card[data-cat*="art"],.result-card[data-cat*="museum"]{border-left-color:#5b21b6}
+.result-card[data-cat*="kids"],.result-card[data-cat*="theatre"],.result-card[data-cat*="shows"],.result-card[data-cat*="wellness"]{border-left-color:#9d174d}
+.result-card[data-cat*="event"],.result-card[data-cat*="active"],.result-card[data-cat*="sport"]{border-left-color:#b91c1c}
+.result-card[data-cat*="swimming"],.result-card[data-cat*="canal"],.result-card[data-cat*="river"]{border-left-color:#075985}
+.result-card[data-cat*="vintage"]{border-left-color:#854d0e}
+.result-card[data-cat*="cinema"],.result-card[data-cat*="film"],.result-card[data-cat*="architecture"]{border-left-color:#4f46e5}
+.result-card[data-cat*="surprise"]{border-left-color:#a16207}
+.result-card[data-cat*="pubs"],[data-cat*="bars"]{border-left-color:#92400e}
+.result-card[data-cat*="live music"]{border-left-color:#6d28d9}
+.result-card[data-cat*="comedy"],[data-cat*="cabaret"]{border-left-color:#be185d}
+.result-card[data-cat*="historic"],[data-cat*="estates"]{border-left-color:#713f12}
+.result-card[data-cat*="walking"]{border-left-color:#166534}
+.result-card[data-cat*="botanical"],[data-cat*="flower"]{border-left-color:#7e22ce}
+.result-card[data-cat*="games"],[data-cat*="social"]{border-left-color:#c2410c}
+.result-card[data-cat*="shopping"]{border-left-color:#0f766e}
+.result-card[data-cat*="desserts"],[data-cat*="sweet"]{border-left-color:#db2777}
+.result-card[data-cat*="neighbourhood"]{border-left-color:#be123c}
+.result-card[data-cat*="talks"],[data-cat*="workshop"],[data-cat*="classes"]{border-left-color:#1d4ed8}
+.result-card[data-cat*="day trips"]{border-left-color:#0369a1}
+.result-card[data-cat*="family fun"]{border-left-color:#a16207}
+
+/* ── NEW KEYFRAMES ── */
+@keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.45);opacity:.65}}
+@keyframes particleBurst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pill-pop{0%,100%{transform:scale(1)}40%{transform:scale(.86)}70%{transform:scale(1.07)}}
+@keyframes spin360{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+/* ── PULSING DOTS ── */
+.top-dot,.ob-dot,.ak-dot{animation:pulse-dot 2.4s ease-in-out infinite}
+
+/* ── SKELETON LOADING ── */
+.skeleton-wrap{padding-bottom:.25rem}
+.skeleton-card{background:var(--card);border-radius:18px;padding:1.25rem;border:1px solid var(--border);border-left:3px solid #e8e6e0;margin-bottom:.85rem}
+.skel{background:linear-gradient(90deg,#f0eeea 25%,#e4e2dc 50%,#f0eeea 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:6px}
+.skel-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;gap:8px}
+.skel-title{height:17px;flex:1}.skel-badge{height:20px;width:22%;border-radius:999px;flex-shrink:0}
+.skel-line{height:11px;width:100%;margin-bottom:.45rem}
+.skel-line.s70{width:70%}.skel-line.s85{width:85%}
+.skel-chips{display:flex;gap:6px;margin-top:.7rem}
+.skel-chip{height:24px;width:18%;border-radius:999px}
+.skel-chip:nth-child(2){width:22%}.skel-chip:nth-child(3){width:14%}
+.skeleton-msg{text-align:center;font-size:.85rem;color:var(--muted);margin-top:.5rem;padding-bottom:.25rem;font-style:italic}
+
+/* ── REPLACE CARD SPINNER ── */
+.replace-spin{font-size:1.5rem;color:var(--teal);display:inline-block;animation:spin360 .65s linear infinite;line-height:1}
+
+/* ── PILL BOUNCE ── */
+.pill-pop{animation:pill-pop .22s ease}
+</style>
+</head>
+<body>
+
+<!-- FILE:// PROTOCOL WARNING -->
+<div id="file-warning">
+  <strong>⚠️ Running from a local file — API calls are blocked by the browser</strong>
+  Run this instead from your terminal:<br>
+  <code onclick="navigator.clipboard?.writeText(this.textContent)">cd "/Users/asishimoni/Desktop/Cluad code Projects/Weekends Explorer" &amp;&amp; python3 -m http.server 8080</code><br>
+  Then open <code onclick="navigator.clipboard?.writeText('http://localhost:8080')">http://localhost:8080</code> in your browser. Click either code block to copy.
+</div>
+<div class="file-warn-spacer" id="file-warn-spacer"></div>
+
+<!-- ═══════════════════════════ API KEY SCREEN ═══════════════════════════ -->
+<div id="screen-apikey" class="screen active">
+  <div class="ak-logo">
+    <div class="ak-dot"></div>
+    <span class="ak-logo-text">Good weekend.</span>
+  </div>
+  <div class="ak-card">
+    <h2>Your London weekend, curated.</h2>
+    <p>Enter your Anthropic API key to get started. It's stored only in your browser — never sent anywhere else.</p>
+    <div class="ak-input-wrap">
+      <input id="ak-input" class="ak-input" type="password" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false">
+      <button class="ak-eye" onclick="toggleAkEye()" id="ak-eye-btn">👁</button>
+    </div>
+    <div id="ak-err" class="ak-err">Please enter a valid API key (starts with sk-ant)</div>
+    <button class="btn-ak" id="btn-ak" onclick="saveApiKey()">Let's go →</button>
+    <p class="ak-hint">Your key is saved to localStorage and never leaves your device.<br>You'll only need to enter this once.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ONBOARDING SCREEN ═══════════════════════════ -->
+<div id="screen-onboarding" class="screen">
+  <div class="ob-topbar">
+    <div class="ob-topbar-row">
+      <div class="ob-dot"></div>
+      <span>Good weekend.</span>
+    </div>
+    <div class="ob-progress-track">
+      <div class="ob-progress-fill" id="ob-progress" style="width:14.3%"></div>
+    </div>
+  </div>
+
+  <div class="ob-body">
+
+    <!-- Step 1: The family -->
+    <div class="ob-step active" id="ob-step-1">
+      <div class="ob-step-label">Step 1 of 7</div>
+      <div class="ob-step-title">Let's meet you.</div>
+      <div class="ob-step-sub">Tell us who's exploring London this weekend.</div>
+
+      <div class="ob-field ob-two">
+        <div>
+          <label class="form-label">Your name</label>
+          <input class="form-input" id="ob-yourName" type="text" placeholder="e.g. Asi" oninput="updateTopbarGreeting()">
+        </div>
+        <div>
+          <label class="form-label">Partner's name</label>
+          <input class="form-input" id="ob-partnerName" type="text" placeholder="e.g. Dana">
+        </div>
+      </div>
+
+      <div class="ob-field ob-two">
+        <div>
+          <label class="form-label">Child's name</label>
+          <input class="form-input" id="ob-childName" type="text" placeholder="e.g. Ilah" oninput="updateChildRefs()">
+        </div>
+        <div>
+          <label class="form-label">Child's age</label>
+          <input class="form-input" id="ob-childAge" type="number" min="0" max="12" placeholder="e.g. 2">
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Your postcode</label>
+        <input class="form-input" id="ob-postcode" type="text" placeholder="e.g. E8 1DY" style="max-width:180px">
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Max travel time from home</label>
+        <span class="slider-val" id="ob-travel-val">30 min</span>
+        <div class="slider-wrap">
+          <input class="range-slider" id="ob-travelTime" type="range" min="15" max="60" value="30" step="5"
+            oninput="updateSlider(this,'ob-travel-val',v=>v+' min')">
+        </div>
+        <div class="slider-labels"><span>15 min</span><span>60 min</span></div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">How do you usually get around?</label>
+        <div class="chip-group" id="ob-transport">
+          <span class="pill" onclick="this.classList.toggle('on')">Walking</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Cycling</span>
+          <span class="pill on" onclick="this.classList.toggle('on')">Tube</span>
+          <span class="pill on" onclick="this.classList.toggle('on')">Overground</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Bus</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Car</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Weekend personality -->
+    <div class="ob-step" id="ob-step-2">
+      <div class="ob-step-label">Step 2 of 7</div>
+      <div class="ob-step-title">Your weekend vibe.</div>
+      <div class="ob-step-sub">How do you like to spend your weekends?</div>
+
+      <div class="ob-field">
+        <label class="form-label">Weekend style (pick all that fit)</label>
+        <div class="chip-group" id="ob-weekendStyle">
+          <span class="pill" onclick="this.classList.toggle('on')">Slow &amp; easy</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Spontaneous</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Planned ahead</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Early birds</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Lazy mornings</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Adventure seekers</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Go with the flow</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Spontaneity — how last-minute can you go?</label>
+        <div class="scale-row" id="sc-spontaneity" data-field="spontaneity">
+          <button class="scale-btn" onclick="setScale('sc-spontaneity',1)">1</button>
+          <button class="scale-btn" onclick="setScale('sc-spontaneity',2)">2</button>
+          <button class="scale-btn on" onclick="setScale('sc-spontaneity',3)">3</button>
+          <button class="scale-btn" onclick="setScale('sc-spontaneity',4)">4</button>
+          <button class="scale-btn" onclick="setScale('sc-spontaneity',5)">5</button>
+        </div>
+        <div class="scale-labels"><span>Very planned</span><span>Fully spontaneous</span></div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Weather sensitivity — how much does rain ruin it?</label>
+        <div class="scale-row" id="sc-weather" data-field="weatherSensitivity">
+          <button class="scale-btn" onclick="setScale('sc-weather',1)">1</button>
+          <button class="scale-btn" onclick="setScale('sc-weather',2)">2</button>
+          <button class="scale-btn on" onclick="setScale('sc-weather',3)">3</button>
+          <button class="scale-btn" onclick="setScale('sc-weather',4)">4</button>
+          <button class="scale-btn" onclick="setScale('sc-weather',5)">5</button>
+        </div>
+        <div class="scale-labels"><span>Rain-proof</span><span>Sunshine only</span></div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label" style="margin-bottom:.65rem">Solo time</label>
+        <div class="toggle-row" style="margin-bottom:.65rem">
+          <div class="toggle-switch" id="tog-soloFreq" onclick="toggleTog('tog-soloFreq')"></div>
+          <span class="tlabel">One of us sometimes goes out alone</span>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-switch" id="tog-soloTime" onclick="toggleTog('tog-soloTime')"></div>
+          <span class="tlabel">We sometimes split up mid-day</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Interests -->
+    <div class="ob-step" id="ob-step-3">
+      <div class="ob-step-label">Step 3 of 7</div>
+      <div class="ob-step-title">What lights you up?</div>
+      <div class="ob-step-sub">Pick everything that genuinely excites you.</div>
+
+      <div class="ob-field">
+        <label class="form-label">Interests</label>
+        <div class="chip-group" id="ob-interests">
+          <span class="pill" onclick="this.classList.toggle('on')">Art galleries</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Architecture</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Street art</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Live music</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Theatre</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Film &amp; cinema</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Food markets</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Specialty coffee</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Fine dining</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Cocktail bars</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Natural history</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Science &amp; tech</span>
+          <span class="pill" onclick="this.classList.toggle('on')">History &amp; heritage</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Literature</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Craft &amp; making</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Vintage hunting</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Fitness &amp; sport</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Yoga &amp; wellness</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Favourite areas (you already love)</label>
+        <input class="form-input" id="ob-favAreas" type="text" placeholder="e.g. Hackney, Islington, Broadway Market">
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Curious about (haven't explored enough)</label>
+        <input class="form-input" id="ob-curiousAreas" type="text" placeholder="e.g. Peckham, Dulwich, Bermondsey">
+      </div>
+    </div>
+
+    <!-- Step 4: Food & coffee -->
+    <div class="ob-step" id="ob-step-4">
+      <div class="ob-step-label">Step 4 of 7</div>
+      <div class="ob-step-title">Food &amp; coffee.</div>
+      <div class="ob-step-sub">Tell us how you like to eat and drink.</div>
+
+      <div class="ob-field">
+        <label class="form-label">Coffee importance to your weekend</label>
+        <div class="scale-row" id="sc-coffee" data-field="coffeeImportance">
+          <button class="scale-btn" onclick="setScale('sc-coffee',1)">1</button>
+          <button class="scale-btn" onclick="setScale('sc-coffee',2)">2</button>
+          <button class="scale-btn" onclick="setScale('sc-coffee',3)">3</button>
+          <button class="scale-btn on" onclick="setScale('sc-coffee',4)">4</button>
+          <button class="scale-btn" onclick="setScale('sc-coffee',5)">5</button>
+        </div>
+        <div class="scale-labels"><span>Not fussed</span><span>Non-negotiable</span></div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Dietary needs</label>
+        <div class="chip-group" id="ob-diet">
+          <span class="pill on" onclick="this.classList.toggle('on')">No restrictions</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Vegetarian</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Vegan</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Gluten-free</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Halal</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Kosher</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Dairy-free</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Pescatarian</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Cuisines you love</label>
+        <input class="form-input" id="ob-cuisines" type="text" placeholder="e.g. Japanese, Middle Eastern, Turkish, Italian">
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Eating style</label>
+        <div class="chip-group" id="ob-eatingStyle">
+          <span class="pill" onclick="this.classList.toggle('on')">Sit-down meals</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Street food &amp; grazing</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Quick bites</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Long lazy lunches</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Tasting menus</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Meal budget per couple</label>
+        <div class="chip-group" id="ob-mealBudget">
+          <span class="pill" onclick="toggleOneGroup(this,'ob-mealBudget')">Under £30</span>
+          <span class="pill on" onclick="toggleOneGroup(this,'ob-mealBudget')">£30–60</span>
+          <span class="pill" onclick="toggleOneGroup(this,'ob-mealBudget')">£60–100</span>
+          <span class="pill" onclick="toggleOneGroup(this,'ob-mealBudget')">Over £100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Vibe killers -->
+    <div class="ob-step" id="ob-step-5">
+      <div class="ob-step-label">Step 5 of 7</div>
+      <div class="ob-step-title">What ruins it for you?</div>
+      <div class="ob-step-sub">Help us avoid the things that kill the weekend mood.</div>
+
+      <div class="ob-field">
+        <label class="form-label">Vibe killers</label>
+        <div class="chip-group" id="ob-vibeKillers">
+          <span class="pill" onclick="this.classList.toggle('on')">Tourist traps</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Long queues</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Chain restaurants</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Loud &amp; crowded</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Overpriced</span>
+          <span class="pill" onclick="this.classList.toggle('on')">No seating</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Rainy outdoor events</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Over-commercialised</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Rushed itineraries</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Kid-unfriendly spots</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Specific places to avoid</label>
+        <textarea class="form-textarea" id="ob-placesToAvoid" placeholder="e.g. Covent Garden, Leicester Square, any Wahaca…"></textarea>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Hard nos — things you'd never do on a weekend</label>
+        <input class="form-input" id="ob-hardNos" type="text" placeholder="e.g. theme parks, escape rooms, loud pubs">
+      </div>
+    </div>
+
+    <!-- Step 6: The little one -->
+    <div class="ob-step" id="ob-step-6">
+      <div class="ob-step-label">Step 6 of 7</div>
+      <div class="ob-step-title">About <span class="child-name-ref">your child</span>.</div>
+      <div class="ob-step-sub">Help us suggest things <span class="child-name-ref">they</span>'ll genuinely love.</div>
+
+      <div class="ob-field">
+        <label class="form-label"><span class="child-name-ref">Their</span> stamina</label>
+        <div class="chip-group" id="ob-childStamina">
+          <span class="pill" onclick="toggleOneGroup(this,'ob-childStamina')">Half day (3–4h)</span>
+          <span class="pill on" onclick="toggleOneGroup(this,'ob-childStamina')">Full day</span>
+          <span class="pill" onclick="toggleOneGroup(this,'ob-childStamina')">Very active</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label"><span class="child-name-ref">They</span> love</label>
+        <div class="chip-group" id="ob-childLoves">
+          <span class="pill" onclick="this.classList.toggle('on')">Playgrounds</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Animals</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Water &amp; splash pads</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Trains &amp; buses</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Museums</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Drawing &amp; crafts</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Music &amp; dancing</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Running &amp; climbing</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Nature &amp; bugs</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Soft play</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <div class="toggle-row">
+          <div class="toggle-switch on" id="tog-buggy" onclick="toggleTog('tog-buggy')"></div>
+          <span class="tlabel">We use a buggy / pushchair</span>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Kid must-haves</label>
+        <div class="chip-group" id="ob-kidMustHaves">
+          <span class="pill" onclick="this.classList.toggle('on')">Buggy accessible</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Highchairs</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Kids menu</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Nappy changing</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Baby quiet area</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Enclosed outdoor space</span>
+          <span class="pill" onclick="this.classList.toggle('on')">Toilets nearby</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 7: In your own words -->
+    <div class="ob-step" id="ob-step-7">
+      <div class="ob-step-label">Step 7 of 7</div>
+      <div class="ob-step-title">Last few things.</div>
+      <div class="ob-step-sub">Anything else that makes your weekends yours.</div>
+
+      <div class="ob-field">
+        <label class="form-label">A little about you as a family</label>
+        <textarea class="form-textarea" id="ob-aboutYou" placeholder="e.g. We're an Israeli family living in Hackney. We love good food, independent bookshops, and hate feeling rushed…"></textarea>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Places you've loved</label>
+        <textarea class="form-textarea" id="ob-lovedPlaces" placeholder="e.g. Columbia Road Flower Market, London Fields Lido, Clissold Park, Ottolenghi…" style="min-height:70px"></textarea>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Places that didn't work for you</label>
+        <textarea class="form-textarea" id="ob-dislikedPlaces" placeholder="e.g. Natural History Museum (too crowded), South Bank on a sunny Sunday…" style="min-height:70px"></textarea>
+      </div>
+
+      <div class="ob-field">
+        <label class="form-label">Anything coming up we should know about?</label>
+        <input class="form-input" id="ob-upcomingEvents" type="text" placeholder="e.g. birthday next week, grandparents visiting in April">
+      </div>
+    </div>
+
+  </div><!-- /ob-body -->
+
+  <div class="ob-footer">
+    <button class="btn-ob-back" id="ob-back-btn" onclick="obBack()" style="display:none">←</button>
+    <button class="btn-ob-next" id="ob-next-btn" onclick="obNext()">Continue →</button>
+    <button class="btn-ob-finish" id="ob-finish-btn" onclick="obFinish()" style="display:none">Start exploring →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MAIN SCREEN ═══════════════════════════ -->
+<div id="screen-main" class="screen">
+  <div class="topbar">
+    <div class="topbar-spacer"></div>
+    <div class="topbar-logo">
+      <div class="top-dot"></div>
+      <h1 id="topbar-greeting">Good weekend.</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-saved-count" id="btn-saved-count" onclick="openSavedSheet()">Saved (0)</button>
+      <button class="btn-profile" onclick="openSettings()" title="Profile settings">
+        ⚙
+        <span class="prof-dot" id="prof-dot"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mode-bar">
+    <button class="mode-btn active" id="mode-guided" onclick="switchMode('guided')">Guided search</button>
+    <button class="mode-btn" id="mode-surprise" onclick="switchMode('surprise')">Surprise me</button>
+  </div>
+
+  <div class="main">
+
+    <div id="guided-panel">
+      <div class="filters-card">
+
+        <!-- WITH KID — moved to top, prominent -->
+        <div class="with-kid-row">
+          <div class="toggle-switch on" id="with-kid-toggle" onclick="toggleKid()"></div>
+          <span class="toggle-label" id="with-kid-label">With <span id="main-kid-name">your child</span></span>
+        </div>
+
+        <div>
+          <span class="filter-label">When</span>
+          <div class="date-row" id="when-group">
+            <!-- populated by JS with real dates -->
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div>
+          <span class="filter-label">Time of day</span>
+          <div class="filter-row" id="time-group">
+            <span class="pill on" onclick="toggleOne(this,'time-group')">Morning</span>
+            <span class="pill" onclick="toggleOne(this,'time-group')">Afternoon</span>
+            <span class="pill" onclick="toggleOne(this,'time-group')">Evening</span>
+            <span class="pill" onclick="toggleOne(this,'time-group')">Full day</span>
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div>
+          <span class="filter-label">Vibe</span>
+          <div class="filter-row" id="vibe-group">
+            <span class="pill" onclick="this.classList.toggle('on')">Relaxed</span>
+            <span class="pill" onclick="this.classList.toggle('on')">Active</span>
+            <span class="pill" onclick="this.classList.toggle('on')">Cultural</span>
+            <span class="pill" onclick="this.classList.toggle('on')">Foodie</span>
+            <span class="pill" onclick="this.classList.toggle('on')">Outdoors</span>
+            <span class="pill" onclick="this.classList.toggle('on')">Cosy</span>
+            <span class="pill" onclick="this.classList.toggle('on')">Discovery</span>
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div>
+          <span class="filter-label">Category</span>
+          <div class="filter-row" id="cat-group">
+            <span class="pill" onclick="this.classList.toggle('on')">🌿 Parks</span>
+            <span class="pill" onclick="this.classList.toggle('on')">🏛 Museums</span>
+            <span class="pill" onclick="this.classList.toggle('on')">🍜 Food &amp; markets</span>
+            <span class="pill" onclick="this.classList.toggle('on')">☕ Coffee</span>
+            <span class="pill" onclick="this.classList.toggle('on')">🎨 Art</span>
+            <span class="pill" onclick="this.classList.toggle('on')">🎟 Live events</span>
+            <span class="pill" onclick="this.classList.toggle('on')">🧸 Kids</span>
+            <span class="pill" onclick="this.classList.toggle('on')">💎 Hidden gems</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🏊 Swimming &amp; lidos</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🚤 Canals &amp; rivers</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🌻 City farms &amp; gardens</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🎭 Kids theatre &amp; shows</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🎬 Cinema &amp; film</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🧥 Vintage &amp; second-hand</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🏗 Architecture walks</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🍽 Pop-ups &amp; supper clubs</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🧘 Wellness &amp; slowness</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">⚽ Active &amp; play</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🍺 Pubs &amp; bars</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🎵 Live music</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🎤 Comedy &amp; cabaret</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🏰 Historic houses &amp; estates</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🥾 Walking routes</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🌺 Botanical gardens &amp; flower markets</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🎲 Games &amp; social</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🛍 Independent shopping</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🍦 Desserts &amp; sweet spots</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🌍 Interesting Neighbourhoods</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🎓 Talks, workshops &amp; classes</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🌳 Day trips</span>
+            <span class="pill cat-extra" style="display:none" onclick="this.classList.toggle('on')">🎡 Family fun</span>
+            <span class="pill" id="cat-toggle-pill" onclick="toggleCatExtra()" style="border-style:dashed;color:var(--muted)">+ 23 more →</span>
+          </div>
+        </div>
+
+        <button class="btn-search" id="search-btn" onclick="runSearch()">Find my weekend</button>
+      </div>
+      <div id="guided-results"></div>
+    </div>
+
+    <div id="surprise-panel" style="display:none">
+      <div class="surprise-card">
+        <h2>Surprise us.</h2>
+        <p>Pick a type of surprise and we'll plan your whole day. No decisions required.</p>
+        <div class="surprise-options">
+          <div class="surprise-opt selected" id="sopt-day" onclick="selectSurprise('day')">
+            <div class="surprise-opt-icon">🗺</div>
+            <div class="surprise-opt-title">Day in an area</div>
+            <div class="surprise-opt-sub">Morning to evening in one neighbourhood</div>
+          </div>
+          <div class="surprise-opt" id="sopt-event" onclick="selectSurprise('event')">
+            <div class="surprise-opt-icon">🎟</div>
+            <div class="surprise-opt-title">Specific event</div>
+            <div class="surprise-opt-sub">Something happening this weekend</div>
+          </div>
+        </div>
+        <div class="surprise-when-row">
+          <span class="surprise-when-label">📅 When?</span>
+          <div class="date-row" id="surprise-when-group"></div>
+        </div>
+        <div class="with-toggle" style="margin-top:1rem;justify-content:center">
+          <div class="toggle-switch on" id="surprise-kid-toggle" onclick="toggleSurpriseKid()"></div>
+          <span class="toggle-label" style="color:rgba(255,255,255,.7)" id="surprise-kid-label">With <span id="surprise-kid-name">your child</span></span>
+        </div>
+        <button class="btn-surprise" id="surprise-btn" onclick="runSurprise()">Surprise me →</button>
+      </div>
+      <div id="surprise-results"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SETTINGS SHEET ═══════════════════════════ -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeSettings()"></div>
+<div class="settings-sheet" id="settings-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-top">
+    <h2>Profile</h2>
+    <button class="sheet-close" onclick="closeSettings()">✕</button>
+  </div>
+  <div class="sheet-tabs">
+    <button class="sheet-tab active" id="stab-view" onclick="switchSettingsTab('view')">View profile</button>
+    <button class="sheet-tab" id="stab-chat" onclick="switchSettingsTab('chat')">Edit with chat</button>
+  </div>
+  <div class="sheet-content">
+    <div class="tab-pane active" id="spane-view">
+      <div id="profile-view-content"></div>
+      <button class="btn-goto-edit" onclick="switchSettingsTab('chat')">Edit with Claude →</button>
+    </div>
+    <div class="tab-pane" id="spane-chat">
+      <div class="chat-intro">Tell Claude what to update — e.g. <em>"we also love cycling"</em>, <em>"remove coffee from interests"</em>, <em>"our meal budget is now £60–100"</em>.</div>
+      <div class="chat-suggestions">
+        <span class="chat-suggestion-chip" onclick="fillAndSendChat('Add cycling to our interests')">Add cycling to our interests</span>
+        <span class="chat-suggestion-chip" onclick="fillAndSendChat('Our budget is now £60–100')">Our budget is now £60–100</span>
+        <span class="chat-suggestion-chip" onclick="fillAndSendChat('We love Ottolenghi and Borough Market')">We love Ottolenghi and Borough Market</span>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div id="changes-preview-wrap"></div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-input" type="text" placeholder="What would you like to change?" onkeydown="if(event.key==='Enter')sendChatMessage()">
+        <button class="btn-send" id="btn-send" onclick="sendChatMessage()">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SAVED ITEMS SHEET ═══════════════════════════ -->
+<div class="sheet-overlay" id="saved-overlay" onclick="closeSavedSheet()"></div>
+<div class="saved-sheet" id="saved-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-top">
+    <h2>Saved places</h2>
+    <button class="sheet-close" onclick="closeSavedSheet()">✕</button>
+  </div>
+  <div class="sheet-content" id="saved-sheet-content"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let profile = {};
+let apiKey = '';
+let obStep = 1;
+let withKid = true;
+let surpriseWithKid = true;
+let surpriseType = 'day';
+let pendingChanges = null;
+// Track current results for the Replace feature
+let lastSearchResults = [];
+let lastSearchFilters = {};
+let chatHistory = [];
+let catExtraOpen = false;
+
+// ══════════════════════════════════════
+// DATE PILLS
+// ══════════════════════════════════════
+function buildDatePills(containerId) {
+  const id = containerId || 'when-group';
+  const today = new Date();
+  const dow = today.getDay();
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function nextWeekday(targetDow) {
+    const d = new Date(today);
+    let diff = targetDow - dow;
+    if (diff <= 0) diff += 7;
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+
+  function nextNextWeekday(targetDow) {
+    const d = nextWeekday(targetDow);
+    d.setDate(d.getDate() + 7);
+    return d;
+  }
+
+  function fmt(d) {
+    return dayNames[d.getDay()] + ' ' + d.getDate() + ' ' + monthNames[d.getMonth()];
+  }
+
+  const dates = [
+    fmt(nextWeekday(6)),
+    fmt(nextWeekday(0)),
+    fmt(nextNextWeekday(6)),
+    fmt(nextNextWeekday(0)),
+  ];
+
+  const container = document.getElementById(id);
+  if (!container) return;
+  container.innerHTML = '';
+  dates.forEach((label, i) => {
+    const span = document.createElement('span');
+    span.className = 'date-pill' + (i === 0 ? ' on' : '');
+    span.textContent = label;
+    span.setAttribute('onclick', `toggleOne(this,'${id}')`);
+    container.appendChild(span);
+  });
+}
+
+// ══════════════════════════════════════
+// CATEGORY COLLAPSE/EXPAND
+// ══════════════════════════════════════
+function toggleCatExtra() {
+  catExtraOpen = !catExtraOpen;
+  document.querySelectorAll('.cat-extra').forEach(el => {
+    el.style.display = catExtraOpen ? '' : 'none';
+  });
+  const pill = document.getElementById('cat-toggle-pill');
+  pill.textContent = catExtraOpen ? '← show less' : '+ 23 more →';
+}
+
+// ══════════════════════════════════════
+// SAVED ITEMS
+// ══════════════════════════════════════
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem('wke_saved') || '[]'); } catch { return []; }
+}
+
+function setSaved(arr) {
+  localStorage.setItem('wke_saved', JSON.stringify(arr));
+  updateSavedCount();
+}
+
+function updateSavedCount() {
+  const n = getSaved().length;
+  const btn = document.getElementById('btn-saved-count');
+  if (btn) {
+    btn.textContent = 'Saved (' + n + ')';
+    btn.classList.toggle('show', n > 0);
+  }
+}
+
+function saveItem(cardId, resultObj) {
+  const saved = getSaved();
+  if (!saved.find(s => s._id === cardId)) {
+    saved.push({ ...resultObj, _id: cardId });
+    setSaved(saved);
+  }
+}
+
+function removeItem(cardId) {
+  const saved = getSaved().filter(s => s._id !== cardId);
+  setSaved(saved);
+}
+
+function isItemSaved(cardId) {
+  return getSaved().some(s => s._id === cardId);
+}
+
+function makeCardId(r) {
+  return (r.name + '_' + (r.area || '')).replace(/\s+/g, '_').toLowerCase().slice(0, 40);
+}
+
+// ── FAVORITES ──
+function getFavorites() {
+  try { return JSON.parse(localStorage.getItem('wke_favorites') || '[]'); } catch { return []; }
+}
+function setFavorites(arr) { localStorage.setItem('wke_favorites', JSON.stringify(arr)); }
+function isFavorite(id) { return getFavorites().includes(id); }
+
+function toggleFavoriteBtn(btn, id) {
+  const favs = getFavorites();
+  const nowFav = !favs.includes(id);
+  if (nowFav) {
+    favs.push(id);
+    btn.classList.add('liked');
+    btn.textContent = '❤️';
+    btn.title = 'Remove from favourites';
+  } else {
+    setFavorites(favs.filter(f => f !== id));
+    btn.classList.remove('liked');
+    btn.textContent = '🤍';
+    btn.title = 'Add to favourites';
+  }
+  if (nowFav) setFavorites(favs);
+  openSavedSheet();
+}
+
+function renderSavedCard(r) {
+  const kidName = profile.childName || 'child';
+  const fav = isFavorite(r._id);
+  return `<div class="saved-card" data-saved-id="${r._id}">
+    <div class="rc-top">
+      <div class="rc-name">${r.name}</div>
+      <span class="rc-badge ${badgeClass(r.category)}">${r.category}</span>
+    </div>
+    <div class="rc-desc">${r.description}</div>
+    <div class="rc-meta">
+      <span class="meta-chip">📍 ${r.area}</span>
+      ${r.travel ? `<span class="meta-chip">🚇 ${r.travel}</span>` : ''}
+      ${r.price ? `<span class="meta-chip">💷 ${r.price}</span>` : ''}
+      ${r.time ? `<span class="meta-chip">⏱ ${r.time}</span>` : ''}
+    </div>
+    <div class="rc-footer">
+      ${r.toddlerScore ? `<div class="rc-toddler"><span class="toddler-stars">${toddlerStars(r.toddlerScore)}</span> ${kidName}-friendly</div>` : '<div></div>'}
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn-heart${fav ? ' liked' : ''}" onclick="toggleFavoriteBtn(this,'${r._id}')" title="${fav ? 'Remove from favourites' : 'Add to favourites'}">${fav ? '❤️' : '🤍'}</button>
+        <button class="btn-remove" onclick="removeSavedItem('${r._id}',this)">Remove</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openSavedSheet() {
+  const saved = getSaved();
+  const favIds = getFavorites();
+  const content = document.getElementById('saved-sheet-content');
+
+  if (!saved.length) {
+    content.innerHTML = '<p style="color:var(--muted);font-size:.9rem;text-align:center;padding:2.5rem 0">No saved places yet.<br>Hit Save on any result card.</p>';
+  } else {
+    const favItems = saved.filter(r => favIds.includes(r._id));
+    let html = '';
+
+    if (favItems.length) {
+      html += `<div class="saved-section-hdr">
+        <span class="saved-section-hdr-label">❤️ Favourites</span>
+        <span class="saved-section-hdr-count">${favItems.length}</span>
+      </div>`;
+      favItems.forEach(r => { html += renderSavedCard(r); });
+      html += `<div class="saved-section-divider"></div>`;
+    }
+
+    html += `<div class="saved-section-hdr">
+      <span class="saved-section-hdr-label">🔖 All saved</span>
+      <span class="saved-section-hdr-count">${saved.length}</span>
+    </div>`;
+    saved.forEach(r => { html += renderSavedCard(r); });
+
+    content.innerHTML = html;
+  }
+  document.getElementById('saved-overlay').classList.add('open');
+  document.getElementById('saved-sheet').classList.add('open');
+}
+
+function closeSavedSheet() {
+  document.getElementById('saved-overlay').classList.remove('open');
+  document.getElementById('saved-sheet').classList.remove('open');
+}
+
+function removeSavedItem(cardId, btn) {
+  removeItem(cardId);
+  // Also remove from favorites
+  setFavorites(getFavorites().filter(f => f !== cardId));
+  // Update the save button on result cards if visible
+  const saveBtn = document.querySelector('[data-card-id="' + cardId + '"]');
+  if (saveBtn) {
+    saveBtn.classList.remove('saved');
+    saveBtn.textContent = 'Save';
+  }
+  openSavedSheet();
+}
+
+// ══════════════════════════════════════
+// PROFILE NUDGE
+// ══════════════════════════════════════
+function maybeShowNudge(targetEl) {
+  if (sessionStorage.getItem('wke_nudge_dismissed')) return;
+  if (profile.aboutYou || profile.lovedPlaces) return;
+  const nudge = document.createElement('div');
+  nudge.className = 'profile-nudge';
+  nudge.id = 'profile-nudge';
+  nudge.innerHTML = `<p>💡 <strong>Your results improve with more context.</strong> Add your favourite places and a bit about yourselves in Profile → Edit with chat.</p><button class="btn-nudge-dismiss" onclick="dismissNudge()">×</button>`;
+  targetEl.appendChild(nudge);
+}
+
+function dismissNudge() {
+  sessionStorage.setItem('wke_nudge_dismissed', '1');
+  const el = document.getElementById('profile-nudge');
+  if (el) el.remove();
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  if (window.location.protocol === 'file:') {
+    document.getElementById('file-warning').classList.add('show');
+    document.getElementById('file-warn-spacer').classList.add('show');
+  }
+
+  apiKey = localStorage.getItem('wke_apikey') || '';
+  const profileStr = localStorage.getItem('wke_profile');
+
+  if (!apiKey) {
+    showScreen('apikey');
+  } else if (!profileStr) {
+    showScreen('onboarding');
+    obGoTo(1);
+  } else {
+    profile = JSON.parse(profileStr);
+    showScreen('main');
+    initMain();
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById('screen-' + id);
+  if (el) {
+    el.classList.add('active');
+    el.style.display = id === 'apikey' ? 'flex' : 'block';
+  }
+}
+
+// ══════════════════════════════════════
+// API KEY SCREEN
+// ══════════════════════════════════════
+function toggleAkEye() {
+  const inp = document.getElementById('ak-input');
+  const btn = document.getElementById('ak-eye-btn');
+  const isPass = inp.type === 'password';
+  inp.type = isPass ? 'text' : 'password';
+  btn.textContent = isPass ? '🙈' : '👁';
+}
+
+function saveApiKey() {
+  const val = document.getElementById('ak-input').value.trim();
+  const err = document.getElementById('ak-err');
+  err.style.display = 'none';
+
+  if (!val.startsWith('sk-ant') || val.length < 20) {
+    err.textContent = 'Please enter a valid Anthropic API key (starts with sk-ant...)';
+    err.style.display = 'block';
+    return;
+  }
+
+  apiKey = val;
+  localStorage.setItem('wke_apikey', val);
+  showScreen('onboarding');
+  obGoTo(1);
+}
+
+// ══════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════
+function obGoTo(step) {
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('ob-step-' + step);
+  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
+  obStep = step;
+  const fill = Math.round((step / 7) * 100);
+  document.getElementById('ob-progress').style.width = fill + '%';
+
+  const backBtn = document.getElementById('ob-back-btn');
+  backBtn.style.display = step > 1 ? 'flex' : 'none';
+
+  const nextBtn = document.getElementById('ob-next-btn');
+  const finishBtn = document.getElementById('ob-finish-btn');
+  if (step === 7) {
+    nextBtn.style.display = 'none';
+    finishBtn.style.display = 'flex';
+  } else {
+    nextBtn.style.display = 'flex';
+    finishBtn.style.display = 'none';
+  }
+}
+
+function obNext() {
+  collectStep(obStep);
+  if (obStep < 7) obGoTo(obStep + 1);
+}
+
+function obBack() {
+  if (obStep > 1) obGoTo(obStep - 1);
+}
+
+function obFinish() {
+  collectStep(7);
+  localStorage.setItem('wke_profile', JSON.stringify(profile));
+  showScreen('main');
+  initMain();
+}
+
+function collectStep(step) {
+  const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const chips = id => [...document.querySelectorAll('#' + id + ' .pill.on')].map(p => p.textContent.trim());
+  const togOn = id => { const el = document.getElementById(id); return el ? el.classList.contains('on') : false; };
+  const scaleVal = id => { const el = document.querySelector('#' + id + ' .scale-btn.on'); return el ? parseInt(el.textContent) : 3; };
+
+  if (step === 1) {
+    profile.yourName = get('ob-yourName');
+    profile.partnerName = get('ob-partnerName');
+    profile.childName = get('ob-childName');
+    profile.childAge = parseInt(get('ob-childAge')) || 2;
+    profile.postcode = get('ob-postcode');
+    profile.maxTravelMins = parseInt(document.getElementById('ob-travelTime')?.value) || 30;
+    profile.transportMode = chips('ob-transport');
+  }
+  if (step === 2) {
+    profile.weekendStyle = chips('ob-weekendStyle');
+    profile.spontaneity = scaleVal('sc-spontaneity');
+    profile.weatherSensitivity = scaleVal('sc-weather');
+    profile.soloFrequency = togOn('tog-soloFreq');
+    profile.soloTime = togOn('tog-soloTime');
+  }
+  if (step === 3) {
+    profile.interests = chips('ob-interests');
+    profile.favouriteAreas = get('ob-favAreas');
+    profile.curiousAreas = get('ob-curiousAreas');
+  }
+  if (step === 4) {
+    profile.coffeeImportance = scaleVal('sc-coffee');
+    profile.diet = chips('ob-diet');
+    profile.cuisines = get('ob-cuisines');
+    profile.eatingStyle = chips('ob-eatingStyle');
+    profile.mealBudget = chips('ob-mealBudget')[0] || '£30–60';
+  }
+  if (step === 5) {
+    profile.vibeKillers = chips('ob-vibeKillers');
+    profile.placesToAvoid = get('ob-placesToAvoid');
+    profile.hardNos = get('ob-hardNos');
+  }
+  if (step === 6) {
+    profile.childStamina = chips('ob-childStamina')[0] || 'Full day';
+    profile.childLoves = chips('ob-childLoves');
+    profile.hasBuggy = togOn('tog-buggy');
+    profile.kidMustHaves = chips('ob-kidMustHaves');
+  }
+  if (step === 7) {
+    profile.aboutYou = get('ob-aboutYou');
+    profile.lovedPlaces = get('ob-lovedPlaces');
+    profile.dislikedPlaces = get('ob-dislikedPlaces');
+    profile.upcomingEvents = get('ob-upcomingEvents');
+  }
+}
+
+function updateChildRefs() {
+  const name = document.getElementById('ob-childName')?.value.trim() || 'your child';
+  document.querySelectorAll('.child-name-ref').forEach(el => {
+    el.textContent = name || 'your child';
+  });
+}
+
+function updateTopbarGreeting() {
+  // optional live update during onboarding
+}
+
+function toggleTog(id) {
+  document.getElementById(id)?.classList.toggle('on');
+}
+
+function toggleOneGroup(el, groupId) {
+  document.querySelectorAll('#' + groupId + ' .pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function setScale(groupId, val) {
+  document.querySelectorAll('#' + groupId + ' .scale-btn').forEach((btn, i) => {
+    btn.classList.toggle('on', i + 1 === val);
+  });
+}
+
+function updateSlider(input, valId, formatter) {
+  const pct = ((input.value - input.min) / (input.max - input.min)) * 100;
+  input.style.setProperty('--pct', pct + '%');
+  const el = document.getElementById(valId);
+  if (el) el.textContent = formatter(input.value);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sl = document.getElementById('ob-travelTime');
+  if (sl) updateSlider(sl, 'ob-travel-val', v => v + ' min');
+  init();
+});
+
+// ══════════════════════════════════════
+// MAIN SCREEN
+// ══════════════════════════════════════
+function initMain() {
+  const kidName = profile.childName || 'your child';
+  document.getElementById('main-kid-name').textContent = kidName;
+  document.getElementById('surprise-kid-name').textContent = kidName;
+  document.getElementById('with-kid-label').innerHTML = 'With <span id="main-kid-name">' + kidName + '</span>';
+  document.getElementById('surprise-kid-label').innerHTML = 'With <span id="surprise-kid-name">' + kidName + '</span>';
+
+  // Personalised greeting
+  const greetEl = document.getElementById('topbar-greeting');
+  if (greetEl) {
+    if (profile.partnerName && profile.yourName) {
+      greetEl.textContent = 'Good weekend, ' + profile.partnerName + ' & ' + profile.yourName + '.';
+    } else if (profile.yourName) {
+      greetEl.textContent = 'Good weekend, ' + profile.yourName + '.';
+    } else {
+      greetEl.textContent = 'Good weekend.';
+    }
+  }
+
+  // Profile dot — show if aboutYou, lovedPlaces, curiousAreas all empty
+  const dot = document.getElementById('prof-dot');
+  if (dot) {
+    const incomplete = !profile.aboutYou && !profile.lovedPlaces && !profile.curiousAreas;
+    dot.classList.toggle('show', incomplete);
+  }
+
+  buildDatePills('when-group');
+  buildDatePills('surprise-when-group');
+  updateSavedCount();
+}
+
+function switchMode(m) {
+  document.getElementById('mode-guided').classList.toggle('active', m === 'guided');
+  document.getElementById('mode-surprise').classList.toggle('active', m === 'surprise');
+  document.getElementById('guided-panel').style.display = m === 'guided' ? 'block' : 'none';
+  document.getElementById('surprise-panel').style.display = m === 'surprise' ? 'block' : 'none';
+}
+
+function toggleOne(el, gid) {
+  document.querySelectorAll('#' + gid + ' .date-pill,#' + gid + ' .pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function toggleKid() {
+  withKid = !withKid;
+  document.getElementById('with-kid-toggle').classList.toggle('on', withKid);
+  const name = profile.childName || 'your child';
+  document.getElementById('with-kid-label').innerHTML = (withKid ? 'With ' : 'Without ') + '<span id="main-kid-name">' + name + '</span>';
+}
+
+function toggleSurpriseKid() {
+  surpriseWithKid = !surpriseWithKid;
+  document.getElementById('surprise-kid-toggle').classList.toggle('on', surpriseWithKid);
+  const name = profile.childName || 'your child';
+  document.getElementById('surprise-kid-label').innerHTML = (surpriseWithKid ? 'With ' : 'Without ') + '<span id="surprise-kid-name">' + name + '</span>';
+}
+
+function selectSurprise(t) {
+  surpriseType = t;
+  document.getElementById('sopt-day').classList.toggle('selected', t === 'day');
+  document.getElementById('sopt-event').classList.toggle('selected', t === 'event');
+}
+
+// ══════════════════════════════════════
+// PERSONALISED LOADING MESSAGE
+// ══════════════════════════════════════
+function buildLoadingMsg(isKid) {
+  const p = profile;
+  const kidName = p.childName || 'the little one';
+  const diet = p.diet || [];
+  const isVeg = diet.includes('Vegetarian') || diet.includes('Vegan');
+  const dietLabel = diet.includes('Vegan') ? 'vegan' : diet.includes('Vegetarian') ? 'vegetarian' : null;
+  const postcode = p.postcode || '';
+  const name1 = p.yourName || '';
+  const name2 = p.partnerName || '';
+  const hasNames = name1 && name2;
+
+  if (isKid && isVeg && postcode) {
+    return `Finding ${dietLabel} family-friendly spots near ${postcode}…`;
+  }
+  if (isKid && isVeg) {
+    return `Finding ${dietLabel} spots the whole family will love…`;
+  }
+  if (isKid && postcode) {
+    return `Searching family-friendly ideas near ${postcode}…`;
+  }
+  if (isKid && hasNames) {
+    return `Searching family-friendly ideas for ${name1} & ${name2}…`;
+  }
+  if (isVeg && postcode) {
+    return `Finding ${dietLabel} spots near ${postcode}…`;
+  }
+  if (isVeg && hasNames) {
+    return `Finding ${dietLabel} ideas for ${name1} & ${name2}…`;
+  }
+  if (postcode) {
+    return `Searching London near ${postcode} for you…`;
+  }
+  if (hasNames) {
+    return `Finding the perfect ideas for ${name1} & ${name2}…`;
+  }
+  return 'Searching London for you…';
+}
+
+function buildSurpriseLoadingMsg(type, isKid) {
+  const kidName = profile.childName || 'the family';
+  if (type === 'day') {
+    if (isKid) return `Designing a day arc for ${kidName} and all…`;
+    return 'Designing your surprise day arc…';
+  }
+  if (isKid) return `Finding the perfect family event…`;
+  return 'Finding the perfect event…';
+}
+
+function buildProfileContext() {
+  const p = profile;
+  const parts = [];
+  if (p.yourName) parts.push(`Names: ${p.yourName} & ${p.partnerName || 'partner'}`);
+  if (p.postcode) parts.push(`Based in: ${p.postcode}`);
+  if (p.maxTravelMins) parts.push(`Max travel: ${p.maxTravelMins} min`);
+  if (p.transportMode?.length) parts.push(`Transport: ${p.transportMode.join(', ')}`);
+  if (p.interests?.length) parts.push(`Interests: ${p.interests.join(', ')}`);
+  if (p.favouriteAreas) parts.push(`Favourite areas: ${p.favouriteAreas}`);
+  if (p.curiousAreas) parts.push(`Curious about: ${p.curiousAreas}`);
+  if (p.coffeeImportance >= 4) parts.push('Specialty coffee is very important to them');
+  if (p.diet?.length && !p.diet.includes('No restrictions')) parts.push(`Diet: ${p.diet.join(', ')}`);
+  if (p.cuisines) parts.push(`Loves cuisines: ${p.cuisines}`);
+  if (p.eatingStyle?.length) parts.push(`Eating style: ${p.eatingStyle.join(', ')}`);
+  if (p.mealBudget) parts.push(`Meal budget: ${p.mealBudget} per couple`);
+  if (p.weekendStyle?.length) parts.push(`Weekend style: ${p.weekendStyle.join(', ')}`);
+  if (p.vibeKillers?.length) parts.push(`Avoid: ${p.vibeKillers.join(', ')}`);
+  if (p.placesToAvoid) parts.push(`Never go to: ${p.placesToAvoid}`);
+  if (p.hardNos) parts.push(`Hard nos: ${p.hardNos}`);
+  if (p.lovedPlaces) parts.push(`Loved before: ${p.lovedPlaces}`);
+  if (p.dislikedPlaces) parts.push(`Didn't love: ${p.dislikedPlaces}`);
+  if (p.aboutYou) parts.push(`About them: ${p.aboutYou}`);
+  return parts.join('\n');
+}
+
+function buildKidContext() {
+  const p = profile;
+  const parts = [];
+  const name = p.childName || 'the child';
+  parts.push(`Child: ${name}, age ${p.childAge || 2}`);
+  if (p.childStamina) parts.push(`Stamina: ${p.childStamina}`);
+  if (p.childLoves?.length) parts.push(`${name} loves: ${p.childLoves.join(', ')}`);
+  if (p.hasBuggy) parts.push('Uses a buggy/pushchair — buggy-accessible routes essential');
+  if (p.kidMustHaves?.length) parts.push(`Must have: ${p.kidMustHaves.join(', ')}`);
+  return parts.join('\n');
+}
+
+async function runSearch() {
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true; btn.textContent = 'Finding your weekend…';
+  const when = document.querySelector('#when-group .date-pill.on')?.textContent || 'This Saturday';
+  const time = document.querySelector('#time-group .pill.on')?.textContent || 'Morning';
+  const vibes = [...document.querySelectorAll('#vibe-group .pill.on')].map(p => p.textContent);
+  const cats = [...document.querySelectorAll('#cat-group .pill.on')].map(p => p.textContent);
+  // Strip emoji prefix from category names for Claude
+  const cleanCats = cats.map(c => c.replace(/^\S+\s+/, '').trim());
+  loading('guided-results', buildLoadingMsg(withKid));
+
+  const kidName = profile.childName || 'the child';
+  const hasCategories = cleanCats.length > 0;
+  const totalResults = hasCategories ? cleanCats.length * 2 : 4;
+
+  const prompt = hasCategories
+    ? `You are a London weekend activity recommender. For EACH of the ${cleanCats.length} categories listed below, suggest exactly 2 specific places or activities.
+
+FAMILY PROFILE:
+${buildProfileContext()}
+
+FILTERS: When: ${when} | Time: ${time} | Vibes: ${vibes.join(', ') || 'any'} | With ${kidName}: ${withKid}
+
+${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
+
+CATEGORIES (provide 2 results for each, in this exact order):
+${cleanCats.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+IMPORTANT: Use the category name EXACTLY as written above in each result's "category" field.
+Pick genuinely specific places with real names. No generic suggestions.
+
+Return ONLY a JSON array of ${totalResults} objects, no markdown:
+[{"name":"...","category":"exact name from list above","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`
+
+    : `You are a London weekend activity recommender. Suggest exactly 4 specific places or activities.
+
+FAMILY PROFILE:
+${buildProfileContext()}
+
+FILTERS: When: ${when} | Time: ${time} | Vibes: ${vibes.join(', ') || 'any'} | With ${kidName}: ${withKid}
+
+${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
+
+Pick genuinely specific places with real names. No generic suggestions. Match their profile closely.
+
+Return ONLY a JSON array of 4 objects, no markdown:
+[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
+
+  try {
+    const maxTok = hasCategories ? Math.min(400 + cleanCats.length * 700, 4000) : 1800;
+    const results = await callClaude(prompt, maxTok);
+    lastSearchResults = [...results];
+    lastSearchFilters = { when, time, vibes: vibes.join(', '), cats: cats.join(', ') };
+
+    let html = '';
+    if (hasCategories) {
+      html = `<div class="results-header"><span class="results-title">Options for you</span><span class="results-count" id="res-count">0</span></div>`;
+      html += renderGroupedResults(results, cleanCats);
+    } else {
+      html = `<div class="results-header"><span class="results-title">Found for you</span><span class="results-count" id="res-count">0</span></div>`;
+      results.forEach((r, i) => { html += renderResultCard(r, i * 0.08); });
+    }
+
+    const container = document.getElementById('guided-results');
+    container.innerHTML = html;
+    animateCount(document.getElementById('res-count'), results.length);
+    restoreSavedState(container);
+    maybeShowNudge(container);
+  } catch (e) {
+    console.error('[runSearch] error:', e);
+    document.getElementById('guided-results').innerHTML = `<div class="empty-state"><p>❌ ${e.message || 'Unknown error'}<br><small style="color:var(--muted)">Open DevTools Console (Cmd+Option+J) for details.</small></p></div>`;
+  }
+  btn.disabled = false; btn.textContent = 'Find my weekend';
+}
+
+function renderGroupedResults(results, cleanCats) {
+  let html = '';
+  let delay = 0;
+  cleanCats.forEach(cat => {
+    // Match results to this category (flexible matching)
+    const catLow = cat.toLowerCase();
+    const catResults = results.filter(r =>
+      (r.category || '').toLowerCase() === catLow ||
+      (r.category || '').toLowerCase().includes(catLow.split(' ')[0]) ||
+      catLow.includes((r.category || '').toLowerCase().split(' ')[0])
+    );
+    if (!catResults.length) return;
+    html += `<div class="cat-results-group">
+      <div class="cat-results-hdr">
+        <span class="cat-results-title">${cat}</span>
+        <span class="cat-results-opts">${catResults.length} option${catResults.length > 1 ? 's' : ''}</span>
+      </div>`;
+    catResults.forEach((r, i) => {
+      html += renderResultCard(r, delay);
+      delay += 0.08;
+      if (i < catResults.length - 1) {
+        html += `<div class="cat-results-or">or</div>`;
+      }
+    });
+    html += `</div>`;
+  });
+  // Catch any results that didn't match a category
+  const matchedNames = new Set(results.filter(r =>
+    cleanCats.some(cat => {
+      const catLow = cat.toLowerCase();
+      return (r.category || '').toLowerCase() === catLow ||
+        (r.category || '').toLowerCase().includes(catLow.split(' ')[0]) ||
+        catLow.includes((r.category || '').toLowerCase().split(' ')[0]);
+    })
+  ).map(r => r.name));
+  const unmatched = results.filter(r => !matchedNames.has(r.name));
+  if (unmatched.length) {
+    unmatched.forEach(r => { html += renderResultCard(r, delay); delay += 0.08; });
+  }
+  return html;
+}
+
+async function runSurprise() {
+  const btn = document.getElementById('surprise-btn');
+  btn.disabled = true; btn.textContent = 'Planning your day…';
+  loading('surprise-results', buildSurpriseLoadingMsg(surpriseType, surpriseWithKid));
+
+  const surpriseWhen = document.querySelector('#surprise-when-group .date-pill.on')?.textContent || 'This Saturday';
+  const kidName = profile.childName || 'the child';
+  const kidCtx = surpriseWithKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing, no children.';
+
+  const prompt = surpriseType === 'day'
+    ? `You are a London weekend planner. Create one surprise day arc in one specific London neighbourhood.
+
+FAMILY PROFILE:
+${buildProfileContext()}
+
+${kidCtx}
+
+DATE: ${surpriseWhen}
+
+Pick a neighbourhood that genuinely surprises this family based on their profile — not obvious tourist areas. It should feel like a discovery.
+
+Return ONLY a JSON object, no markdown:
+{"title":"Evocative day title","area":"Specific neighbourhood, London","stops":[{"time":"9:30am","place":"Real place name","note":"1–2 sentences on what to do and why it fits this family"},{"time":"11:30am","place":"...","note":"..."},{"time":"1:30pm","place":"...","note":"..."},{"time":"3:30pm","place":"...","note":"..."}]}`
+
+    : `You are a London event recommender. Suggest one specific event happening on ${surpriseWhen}.
+
+FAMILY PROFILE:
+${buildProfileContext()}
+
+${kidCtx}
+
+Return ONLY a JSON array with 1 object, no markdown:
+[{"name":"...","category":"Event","area":"...","description":"2 specific sentences personalised to this family","travel":"from ${profile.postcode || 'home'}","price":"...","time":"...","toddlerScore":${surpriseWithKid ? '1-5' : '0'}}]`;
+
+  try {
+    const parsed = await callClaude(prompt);
+    let html = '';
+    if (surpriseType === 'day') {
+      html = renderArcCard(parsed, surpriseWithKid);
+    } else {
+      const results = Array.isArray(parsed) ? parsed : [parsed];
+      html = `<div class="results-header"><span class="results-title">Your surprise</span></div>`;
+      results.forEach((r, i) => { html += renderResultCard(r, i * 0.08); });
+    }
+    const container = document.getElementById('surprise-results');
+    container.innerHTML = html;
+    restoreSavedState(container);
+  } catch (e) {
+    document.getElementById('surprise-results').innerHTML = `<div class="empty-state"><p>Something went wrong. Try again.</p></div>`;
+  }
+  btn.disabled = false; btn.textContent = 'Surprise me →';
+}
+
+function restoreSavedState(container) {
+  container.querySelectorAll('.btn-save').forEach(btn => {
+    const cardId = btn.dataset.cardId;
+    if (cardId && isItemSaved(cardId)) {
+      btn.classList.add('saved');
+      btn.textContent = 'Saved ✓';
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// SETTINGS PANEL
+// ══════════════════════════════════════
+function openSettings() {
+  document.getElementById('sheet-overlay').classList.add('open');
+  document.getElementById('settings-sheet').classList.add('open');
+  renderProfileView();
+}
+
+function closeSettings() {
+  document.getElementById('sheet-overlay').classList.remove('open');
+  document.getElementById('settings-sheet').classList.remove('open');
+}
+
+function switchSettingsTab(t) {
+  document.querySelectorAll('.sheet-tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+  document.getElementById('stab-' + t).classList.add('active');
+  document.getElementById('spane-' + t).classList.add('active');
+  if (t === 'view') renderProfileView();
+}
+
+function renderProfileView() {
+  const p = profile;
+  const saved = localStorage.getItem('wke_profile');
+  if (!p || !saved || !Object.keys(p).some(k => p[k] && !(Array.isArray(p[k]) && !p[k].length))) {
+    document.getElementById('profile-view-content').innerHTML = `
+      <div style="text-align:center;padding:2.5rem 1rem">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">👤</div>
+        <p style="color:var(--muted);font-size:.95rem;line-height:1.65">No profile yet.<br>Complete the onboarding to see your details here.</p>
+      </div>`;
+    return;
+  }
+
+  function row(key, val) {
+    if (!val || val === 'undefined' || (Array.isArray(val) && !val.length)) return '';
+    const display = Array.isArray(val)
+      ? `<div class="prof-chips">${val.map(v => `<span class="prof-chip">${v}</span>`).join('')}</div>`
+      : `<span>${val}</span>`;
+    return `<div class="prof-row"><span class="prof-key">${key}</span><span class="prof-val">${display}</span></div>`;
+  }
+
+  function section(title, icon, rows) {
+    const content = rows.filter(Boolean).join('');
+    if (!content) return '';
+    return `<div class="prof-section"><div class="prof-section-title">${icon} ${title}</div>${content}</div>`;
+  }
+
+  const html = [
+    section('The family', '👨‍👩‍👧', [
+      row('Names', [p.yourName, p.partnerName].filter(Boolean).join(' & ')),
+      row('Child', p.childName ? p.childName + (p.childAge ? ', age ' + p.childAge : '') : null),
+      row('Based in', p.postcode),
+      row('Max travel', p.maxTravelMins ? p.maxTravelMins + ' min' : null),
+      row('Transport', p.transportMode),
+    ]),
+    section('Weekend style', '🌿', [
+      row('Style', p.weekendStyle),
+      row('Spontaneity', p.spontaneity ? p.spontaneity + '/5' : null),
+      row('Weather', p.weatherSensitivity ? p.weatherSensitivity + '/5' : null),
+      row('Solo time', p.soloFrequency ? 'Yes' : null),
+    ]),
+    section('Interests', '🎨', [
+      row('Interests', p.interests),
+      row('Favourite areas', p.favouriteAreas),
+      row('Curious about', p.curiousAreas),
+    ]),
+    section('Food & coffee', '☕', [
+      row('Coffee', p.coffeeImportance ? p.coffeeImportance + '/5' : null),
+      row('Diet', p.diet),
+      row('Cuisines', p.cuisines),
+      row('Eating style', p.eatingStyle),
+      row('Meal budget', p.mealBudget),
+    ]),
+    section('Preferences', '🚫', [
+      row('Vibe killers', p.vibeKillers),
+      row('Avoid', p.placesToAvoid),
+      row('Hard nos', p.hardNos),
+    ]),
+    section((p.childName || 'Child') + ' info', '🧸', [
+      row('Stamina', p.childStamina),
+      row('Loves', p.childLoves),
+      row('Buggy', p.hasBuggy ? 'Yes' : null),
+      row('Must-haves', p.kidMustHaves),
+    ]),
+    section('About you', '✍️', [
+      row('In your words', p.aboutYou),
+      row('Loved places', p.lovedPlaces),
+      row('Avoided', p.dislikedPlaces),
+      row('Coming up', p.upcomingEvents),
+    ]),
+  ].filter(Boolean).join('');
+
+  document.getElementById('profile-view-content').innerHTML = html;
+}
+
+// ══════════════════════════════════════
+// PROFILE CHAT
+// ══════════════════════════════════════
+function appendChatMsg(role, text) {
+  const wrap = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.textContent = text;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function fillAndSendChat(text) {
+  const input = document.getElementById('chat-input');
+  input.value = text;
+  sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  appendChatMsg('user', msg);
+  input.value = '';
+  chatHistory.push({ role: 'user', content: msg });
+
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true;
+
+  const systemInstruction = `You help users update their weekend activity profile for a London weekend app.
+
+Current profile (JSON):
+${JSON.stringify(profile, null, 2)}
+
+The user wants to make changes. Reply in a friendly, brief tone, explaining what you're changing. Then output a JSON block on a new line like this:
+
+CHANGES_JSON:{"fieldName": newValue, ...}
+
+Only include fields that need to change. Use the exact same field names as the profile JSON. For array fields, always return the complete new array. Available fields: yourName, partnerName, childName, childAge, postcode, maxTravelMins, transportMode, weekendStyle, spontaneity, weatherSensitivity, soloFrequency, soloTime, interests, favouriteAreas, curiousAreas, coffeeImportance, diet, cuisines, eatingStyle, mealBudget, vibeKillers, placesToAvoid, hardNos, childStamina, childLoves, hasBuggy, kidMustHaves, aboutYou, lovedPlaces, dislikedPlaces, upcomingEvents.`;
+
+  try {
+    const raw = await callClaudeRaw(msg.length > 0
+      ? systemInstruction + '\n\nUser message: ' + msg
+      : systemInstruction);
+
+    const changesMatch = raw.match(/CHANGES_JSON:(\{[\s\S]*?\})(?:\s*$|\n)/);
+    const reply = raw.replace(/CHANGES_JSON:\{[\s\S]*$/, '').trim();
+
+    appendChatMsg('assistant', reply || 'Updated!');
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    if (changesMatch) {
+      try {
+        pendingChanges = JSON.parse(changesMatch[1]);
+        renderChangesPreview(pendingChanges);
+      } catch { /* ignore parse errors */ }
+    }
+  } catch (e) {
+    appendChatMsg('assistant', 'Something went wrong — ' + (e.message || 'try again'));
+  }
+
+  btn.disabled = false;
+}
+
+function renderChangesPreview(changes) {
+  const wrap = document.getElementById('changes-preview-wrap');
+  if (!changes || !Object.keys(changes).length) { wrap.innerHTML = ''; return; }
+
+  const fieldLabels = {
+    yourName:'Your name', partnerName:'Partner name', childName:'Child name', childAge:'Child age',
+    postcode:'Postcode', maxTravelMins:'Max travel', transportMode:'Transport',
+    weekendStyle:'Weekend style', spontaneity:'Spontaneity', weatherSensitivity:'Weather sensitivity',
+    interests:'Interests', favouriteAreas:'Favourite areas', curiousAreas:'Curious about',
+    coffeeImportance:'Coffee importance', diet:'Diet', cuisines:'Cuisines', eatingStyle:'Eating style',
+    mealBudget:'Meal budget', vibeKillers:'Vibe killers', placesToAvoid:'Places to avoid',
+    hardNos:'Hard nos', childStamina:'Child stamina', childLoves:'Child loves',
+    hasBuggy:'Has buggy', kidMustHaves:'Kid must-haves', aboutYou:'About you',
+    lovedPlaces:'Loved places', dislikedPlaces:'Disliked places', upcomingEvents:'Upcoming events',
+    soloFrequency:'Solo frequency', soloTime:'Solo time'
+  };
+
+  const rows = Object.entries(changes).map(([k, v]) => {
+    const label = fieldLabels[k] || k;
+    const oldVal = Array.isArray(profile[k]) ? profile[k].join(', ') : String(profile[k] ?? '');
+    const newVal = Array.isArray(v) ? v.join(', ') : String(v);
+    return `<div class="cp-row"><div class="cp-key">${label}</div><div><span class="cp-old">${oldVal}</span><span class="cp-new">${newVal}</span></div></div>`;
+  }).join('');
+
+  wrap.innerHTML = `<div class="changes-preview">
+    <div class="cp-title">Proposed changes</div>
+    ${rows}
+    <div class="cp-actions">
+      <button class="btn-apply" onclick="applyChanges()">Apply changes</button>
+      <button class="btn-dismiss" onclick="dismissChanges()">Dismiss</button>
+    </div>
+  </div>`;
+}
+
+function applyChanges() {
+  if (!pendingChanges) return;
+  Object.assign(profile, pendingChanges);
+  localStorage.setItem('wke_profile', JSON.stringify(profile));
+  pendingChanges = null;
+  document.getElementById('changes-preview-wrap').innerHTML = '';
+  appendChatMsg('assistant', '✓ Changes saved to your profile.');
+  renderProfileView();
+  // Refresh greeting and dot
+  initMain();
+}
+
+function dismissChanges() {
+  pendingChanges = null;
+  document.getElementById('changes-preview-wrap').innerHTML = '';
+}
+
+// ══════════════════════════════════════
+// CLAUDE API
+// ══════════════════════════════════════
+const CLAUDE_MODEL = 'claude-sonnet-4-5';
+// On localhost → use Python proxy to avoid CORS. On GitHub Pages / any HTTPS host → call Anthropic directly.
+const API_ENDPOINT = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? '/api/messages'
+  : 'https://api.anthropic.com/v1/messages';
+
+function assertApiKey() {
+  if (!apiKey) apiKey = localStorage.getItem('wke_apikey') || '';
+  console.log('[API] key prefix:', apiKey ? apiKey.slice(0, 12) + '…' : '(EMPTY)');
+  if (!apiKey) {
+    showScreen('apikey');
+    throw new Error('No API key — please enter your Anthropic key first.');
+  }
+}
+
+async function callClaude(prompt, maxTokens = 1800) {
+  assertApiKey();
+  console.log('[API] callClaude model:', CLAUDE_MODEL, 'maxTokens:', maxTokens);
+
+  let res;
+  try {
+    res = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true'
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+  } catch (networkErr) {
+    console.error('[API] Network/CORS error:', networkErr);
+    throw new Error('Network error — ' + networkErr.message);
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error('[API] HTTP', res.status, body);
+    let msg = 'API error ' + res.status;
+    try { msg = JSON.parse(body).error?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  const raw = data.content.find(b => b.type === 'text')?.text || '[]';
+  console.log('[API] raw response (first 200):', raw.slice(0, 200));
+  return JSON.parse(raw.replace(/```json\n?|```\n?/g, '').trim());
+}
+
+async function callClaudeRaw(prompt, maxTokens = 1200) {
+  assertApiKey();
+  console.log('[API] callClaudeRaw model:', CLAUDE_MODEL);
+
+  let res;
+  try {
+    res = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true'
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+  } catch (networkErr) {
+    console.error('[API] Network/CORS error:', networkErr);
+    throw new Error('Network error — ' + networkErr.message);
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error('[API] HTTP', res.status, body);
+    let msg = 'API error ' + res.status;
+    try { msg = JSON.parse(body).error?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  return data.content.find(b => b.type === 'text')?.text || '';
+}
+
+// ══════════════════════════════════════
+// RENDER HELPERS
+// ══════════════════════════════════════
+function badgeClass(cat) {
+  const map = {
+    'nature':'badge-nature','parks':'badge-nature','food & markets':'badge-food','food':'badge-food',
+    'culture':'badge-culture','museums':'badge-culture','art':'badge-culture',
+    'kids':'badge-kids','kids theatre & shows':'badge-theatre',
+    'event':'badge-event','live events':'badge-event',
+    'swimming & lidos':'badge-swimming','canals & rivers':'badge-canal',
+    'city farms & gardens':'badge-farm','cinema & film':'badge-film',
+    'vintage & second-hand':'badge-vintage','architecture walks':'badge-architecture',
+    'pop-ups & supper clubs':'badge-popup','wellness & slowness':'badge-wellness',
+    'active & play':'badge-sport','surprise':'badge-surprise',
+    'hidden gems':'badge-nature','coffee':'badge-food',
+    'pubs & bars':'badge-pub','live music':'badge-music',
+    'comedy & cabaret':'badge-comedy','historic houses & estates':'badge-heritage',
+    'walking routes':'badge-walking','botanical gardens & flower markets':'badge-botanical',
+    'games & social':'badge-games','independent shopping':'badge-shopping',
+    'desserts & sweet spots':'badge-desserts','interesting neighbourhoods':'badge-neighbourhood',
+    'talks, workshops & classes':'badge-workshops','day trips':'badge-daytrip',
+    'family fun':'badge-familyfun'
+  };
+  return map[(cat || '').toLowerCase()] || 'badge-nature';
+}
+
+function toddlerStars(n) {
+  return '★'.repeat(Math.max(0, n)) + '☆'.repeat(Math.max(0, 5 - n));
+}
+
+function toggleSaveBtn(btn, cardId, resultObj) {
+  const nowSaved = !btn.classList.contains('saved');
+  if (nowSaved) {
+    saveItem(cardId, resultObj);
+    btn.classList.add('saved');
+    btn.textContent = 'Saved ✓';
+  } else {
+    removeItem(cardId);
+    btn.classList.remove('saved');
+    btn.textContent = 'Save';
+  }
+  updateSavedCount();
+}
+
+function renderResultCard(r, delay) {
+  const kidName = profile.childName || 'child';
+  const cardId = makeCardId(r);
+  const alreadySaved = isItemSaved(cardId);
+  const alreadyVisited = isVisited(r.name);
+  // Encode result obj for inline handlers
+  const encoded = encodeURIComponent(JSON.stringify(r));
+  return `<div class="result-card" data-card-id="${cardId}" data-cat="${(r.category||'').toLowerCase()}" style="animation-delay:${delay}s">
+    <div class="rc-top">
+      <div class="rc-name">${r.name}</div>
+      <span class="rc-badge ${badgeClass(r.category)}">${r.category}</span>
+    </div>
+    <div class="rc-desc">${r.description}</div>
+    <div class="rc-meta">
+      <span class="meta-chip">📍 ${r.area}</span>
+      <span class="meta-chip">🚇 ${r.travel}</span>
+      ${r.price ? `<span class="meta-chip">💷 ${r.price}</span>` : ''}
+      ${r.time ? `<span class="meta-chip">⏱ ${r.time}</span>` : ''}
+    </div>
+    <div class="rc-footer">
+      <div class="rc-toddler">
+        ${r.toddlerScore ? `<span class="toddler-stars">${toddlerStars(r.toddlerScore)}</span> ${kidName}-friendly` : ''}
+      </div>
+      <div class="rc-actions">
+        <button class="btn-been${alreadyVisited ? ' been' : ''}" onclick="toggleBeenThere(this,'${cardId}',JSON.parse(decodeURIComponent('${encoded}')))">${alreadyVisited ? '✓ Been there' : 'Been there?'}</button>
+        <button class="btn-replace" title="Get a different suggestion" onclick="replaceCard(this,'${cardId}')">↻</button>
+        <button class="btn-save${alreadySaved ? ' saved' : ''}" data-card-id="${cardId}" onclick="toggleSaveBtn(this,'${cardId}',JSON.parse(decodeURIComponent('${encoded}')))">${alreadySaved ? 'Saved ✓' : 'Save'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderArcCard(arc, showKid) {
+  const kidName = profile.childName || 'child';
+  const stops = (arc.stops || []).map((s, i) => `
+    <div class="arc-stop">
+      <div class="arc-dot">${i + 1}</div>
+      <div>
+        <div class="arc-time">${s.time}</div>
+        <div class="arc-place">${s.place}</div>
+        <div class="arc-note">${s.note}</div>
+      </div>
+    </div>`).join('');
+  return `<div class="arc-card">
+    <div class="arc-header">
+      <div style="flex:1">
+        <h3>${arc.title}</h3>
+        <div class="arc-area">${arc.area} · ${showKid ? 'With ' + kidName : 'Adults only'}</div>
+      </div>
+      <span class="rc-badge badge-surprise">Day arc</span>
+    </div>
+    <div class="arc-stops">${stops}</div>
+  </div>`;
+}
+
+function loading(target, msg) {
+  const skels = [1,2,3,4].map(() => `
+    <div class="skeleton-card">
+      <div class="skel-top"><div class="skel skel-title"></div><div class="skel skel-badge"></div></div>
+      <div class="skel skel-line"></div>
+      <div class="skel skel-line s85"></div>
+      <div class="skel skel-line s70"></div>
+      <div class="skel-chips"><div class="skel skel-chip"></div><div class="skel skel-chip"></div><div class="skel skel-chip"></div></div>
+    </div>`).join('');
+  document.getElementById(target).innerHTML = `<div class="skeleton-wrap">${skels}<p class="skeleton-msg">${msg}</p></div>`;
+}
+
+// ══════════════════════════════════════
+// DELIGHT — PARTICLES, COUNTER, BOUNCE
+// ══════════════════════════════════════
+function burstParticles(el) {
+  const emojis = ['⭐','🎉','🎊','✨','💛','🌟'];
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  for (let i = 0; i < 7; i++) {
+    const span = document.createElement('span');
+    span.textContent = emojis[i % emojis.length];
+    const angle = (i / 7) * 2 * Math.PI;
+    const dist = 45 + Math.random() * 40;
+    const dx = Math.round(Math.cos(angle) * dist);
+    const dy = Math.round(Math.sin(angle) * dist - 20);
+    span.style.cssText = [
+      'position:fixed',
+      `left:${cx}px`,
+      `top:${cy}px`,
+      `font-size:${.85 + Math.random() * .55}rem`,
+      'pointer-events:none',
+      'z-index:9999',
+      `--dx:${dx}px`,
+      `--dy:${dy}px`,
+      'animation:particleBurst .75s ease-out forwards',
+      `animation-delay:${i * 35}ms`
+    ].join(';');
+    document.body.appendChild(span);
+    setTimeout(() => span.remove(), 900);
+  }
+}
+
+function animateCount(el, target) {
+  if (!el) return;
+  const dur = 550;
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now - start) / dur, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const cur = Math.round(eased * target);
+    el.textContent = cur + (p < 1 ? '' : ' suggestions');
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// Pill bounce on click
+document.addEventListener('click', function(e) {
+  const pill = e.target.closest('.pill,.date-pill');
+  if (!pill) return;
+  pill.classList.remove('pill-pop');
+  void pill.offsetWidth;
+  pill.classList.add('pill-pop');
+  pill.addEventListener('animationend', () => pill.classList.remove('pill-pop'), { once: true });
+});
+
+// ══════════════════════════════════════
+// VISITED PLACES
+// ══════════════════════════════════════
+function getVisited() {
+  try { return JSON.parse(localStorage.getItem('wke_visited') || '[]'); } catch { return []; }
+}
+function setVisited(arr) { localStorage.setItem('wke_visited', JSON.stringify(arr)); }
+function isVisited(name) { return getVisited().includes(name); }
+
+function toggleBeenThere(btn, cardId, resultObj) {
+  const nowVisited = !btn.classList.contains('been');
+  const visited = getVisited();
+  if (nowVisited) {
+    // Mark visited
+    if (!visited.includes(resultObj.name)) { visited.push(resultObj.name); setVisited(visited); }
+    // Append to profile.lovedPlaces so future searches know we liked it
+    if (profile) {
+      const existing = profile.lovedPlaces || '';
+      if (!existing.includes(resultObj.name)) {
+        profile.lovedPlaces = existing ? existing + ', ' + resultObj.name : resultObj.name;
+        localStorage.setItem('wke_profile', JSON.stringify(profile));
+      }
+    }
+    // Also save to saved-items with visited flag so it shows in Saved sheet
+    saveItem(cardId, { ...resultObj, _visited: true });
+    // Update save button to reflect saved state
+    const card = btn.closest('.result-card');
+    if (card) {
+      const saveBtn = card.querySelector('.btn-save');
+      if (saveBtn && !saveBtn.classList.contains('saved')) {
+        saveBtn.classList.add('saved');
+        saveBtn.textContent = 'Saved ✓';
+      }
+    }
+    btn.classList.add('been');
+    btn.textContent = '✓ Been there';
+    burstParticles(btn);
+  } else {
+    // Unmark
+    setVisited(visited.filter(v => v !== resultObj.name));
+    btn.classList.remove('been');
+    btn.textContent = 'Been there?';
+  }
+}
+
+// ══════════════════════════════════════
+// REPLACE CARD
+// ══════════════════════════════════════
+async function replaceCard(btn, oldCardId) {
+  const card = btn.closest('.result-card');
+  if (!card) return;
+
+  btn.disabled = true;
+
+  // Snapshot card height so it doesn't jump
+  const h = card.offsetHeight;
+  const origInner = card.innerHTML;
+  card.style.minHeight = h + 'px';
+  card.style.pointerEvents = 'none';
+  card.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:${h}px;gap:.5rem">
+    <span class="replace-spin">↻</span>
+    <p style="font-size:.82rem;color:var(--muted)">Finding an alternative…</p>
+  </div>`;
+
+  // Build exclusion list from ALL currently shown cards
+  const shownNames = [...document.querySelectorAll('.result-card[data-card-id]')]
+    .map(c => c.dataset.cardId)
+    .map(id => lastSearchResults.find(r => makeCardId(r) === id)?.name)
+    .filter(Boolean);
+
+  const filters = lastSearchFilters;
+  const prompt = `You are a London weekend activity recommender. Suggest exactly 1 specific place or activity as a fresh alternative.
+
+FAMILY PROFILE:
+${buildProfileContext()}
+
+FILTERS: When: ${filters.when || 'This Saturday'} | Time: ${filters.time || 'Morning'} | Vibes: ${filters.vibes || 'any'} | With kid: ${withKid}
+
+${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
+
+MUST NOT suggest any of these already-shown places: ${shownNames.join(', ')}
+
+Return ONLY a JSON array with 1 object, no markdown:
+[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
+
+  try {
+    const results = await callClaude(prompt, 700);
+    const r = results[0];
+    if (!r) throw new Error('No result returned');
+
+    // Update tracking array
+    const idx = lastSearchResults.findIndex(res => makeCardId(res) === oldCardId);
+    if (idx !== -1) lastSearchResults[idx] = r; else lastSearchResults.push(r);
+
+    // Build new card element with pop-in animation
+    const newCardId = makeCardId(r);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderResultCard(r, 0);
+    const newCard = tmp.firstElementChild;
+    newCard.style.animation = 'fadeUp .3s ease forwards';
+    newCard.style.opacity = '0';
+
+    card.replaceWith(newCard);
+  } catch (e) {
+    console.error('[replaceCard]', e);
+    // Restore original with brief error flash
+    card.innerHTML = origInner;
+    card.style.pointerEvents = '';
+    card.style.minHeight = '';
+    card.style.outline = '2px solid var(--red)';
+    card.style.outlineOffset = '-2px';
+    setTimeout(() => { card.style.outline = ''; card.style.outlineOffset = ''; }, 2000);
+    // Re-enable replace btn
+    const newBtn = card.querySelector('.btn-replace');
+    if (newBtn) newBtn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
