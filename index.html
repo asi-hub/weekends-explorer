@@ -381,23 +381,6 @@ body{background:var(--bg);font-family:'Instrument Sans',sans-serif;color:var(--n
 <div class="file-warn-spacer" id="file-warn-spacer"></div>
 
 <!-- ═══════════════════════════ API KEY SCREEN ═══════════════════════════ -->
-<div id="screen-apikey" class="screen active">
-  <div class="ak-logo">
-    <div class="ak-dot"></div>
-    <span class="ak-logo-text">Good weekend.</span>
-  </div>
-  <div class="ak-card">
-    <h2>Your London weekend, curated.</h2>
-    <p>Enter your Anthropic API key to get started. It's stored only in your browser — never sent anywhere else.</p>
-    <div class="ak-input-wrap">
-      <input id="ak-input" class="ak-input" type="password" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false">
-      <button class="ak-eye" onclick="toggleAkEye()" id="ak-eye-btn">👁</button>
-    </div>
-    <div id="ak-err" class="ak-err">Please enter a valid API key (starts with sk-ant)</div>
-    <button class="btn-ak" id="btn-ak" onclick="saveApiKey()">Let's go →</button>
-    <p class="ak-hint">Your key is saved to localStorage and never leaves your device.<br>You'll only need to enter this once.</p>
-  </div>
-</div>
 
 <!-- ═══════════════════════════ ONBOARDING SCREEN ═══════════════════════════ -->
 <div id="screen-onboarding" class="screen">
@@ -940,7 +923,6 @@ body{background:var(--bg);font-family:'Instrument Sans',sans-serif;color:var(--n
 // STATE
 // ══════════════════════════════════════
 let profile = {};
-let apiKey = '';
 let obStep = 1;
 let withKid = true;
 let surpriseWithKid = true;
@@ -1181,12 +1163,9 @@ function init() {
     document.getElementById('file-warn-spacer').classList.add('show');
   }
 
-  apiKey = localStorage.getItem('wke_apikey') || '';
   const profileStr = localStorage.getItem('wke_profile');
 
-  if (!apiKey) {
-    showScreen('apikey');
-  } else if (!profileStr) {
+  if (!profileStr) {
     showScreen('onboarding');
     obGoTo(1);
   } else {
@@ -1204,37 +1183,10 @@ function showScreen(id) {
   const el = document.getElementById('screen-' + id);
   if (el) {
     el.classList.add('active');
-    el.style.display = id === 'apikey' ? 'flex' : 'block';
+    el.style.display = 'block';
   }
 }
 
-// ══════════════════════════════════════
-// API KEY SCREEN
-// ══════════════════════════════════════
-function toggleAkEye() {
-  const inp = document.getElementById('ak-input');
-  const btn = document.getElementById('ak-eye-btn');
-  const isPass = inp.type === 'password';
-  inp.type = isPass ? 'text' : 'password';
-  btn.textContent = isPass ? '🙈' : '👁';
-}
-
-function saveApiKey() {
-  const val = document.getElementById('ak-input').value.trim();
-  const err = document.getElementById('ak-err');
-  err.style.display = 'none';
-
-  if (!val.startsWith('sk-ant') || val.length < 20) {
-    err.textContent = 'Please enter a valid Anthropic API key (starts with sk-ant...)';
-    err.style.display = 'block';
-    return;
-  }
-
-  apiKey = val;
-  localStorage.setItem('wke_apikey', val);
-  showScreen('onboarding');
-  obGoTo(1);
-}
 
 // ══════════════════════════════════════
 // ONBOARDING
@@ -1923,17 +1875,7 @@ const CLAUDE_MODEL = 'claude-sonnet-4-5';
 // Always use /api/messages — proxied by Python (localhost) or Vercel serverless function (production).
 const API_ENDPOINT = '/api/messages';
 
-function assertApiKey() {
-  if (!apiKey) apiKey = localStorage.getItem('wke_apikey') || '';
-  console.log('[API] key prefix:', apiKey ? apiKey.slice(0, 12) + '…' : '(EMPTY)');
-  if (!apiKey) {
-    showScreen('apikey');
-    throw new Error('No API key — please enter your Anthropic key first.');
-  }
-}
-
 async function callClaude(prompt, maxTokens = 1800) {
-  assertApiKey();
   console.log('[API] callClaude model:', CLAUDE_MODEL, 'maxTokens:', maxTokens);
 
   let res;
@@ -1941,10 +1883,7 @@ async function callClaude(prompt, maxTokens = 1800) {
     res = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
@@ -1972,7 +1911,6 @@ async function callClaude(prompt, maxTokens = 1800) {
 }
 
 async function callClaudeRaw(prompt, maxTokens = 1200) {
-  assertApiKey();
   console.log('[API] callClaudeRaw model:', CLAUDE_MODEL);
 
   let res;
@@ -1980,10 +1918,7 @@ async function callClaudeRaw(prompt, maxTokens = 1200) {
     res = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
