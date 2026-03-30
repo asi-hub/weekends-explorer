@@ -1920,10 +1920,8 @@ function dismissChanges() {
 // CLAUDE API
 // ══════════════════════════════════════
 const CLAUDE_MODEL = 'claude-sonnet-4-5';
-// On localhost → use Python proxy to avoid CORS. On GitHub Pages / any HTTPS host → call Anthropic directly.
-const API_ENDPOINT = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? '/api/messages'
-  : 'https://api.anthropic.com/v1/messages';
+// Always use /api/messages — proxied by Python (localhost) or Vercel serverless function (production).
+const API_ENDPOINT = '/api/messages';
 
 function assertApiKey() {
   if (!apiKey) apiKey = localStorage.getItem('wke_apikey') || '';
