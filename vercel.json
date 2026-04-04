@@ -1,5 +1,8 @@
 {
-  "rewrites": [
-    { "source": "/api/messages", "destination": "/api/messages" }
-  ]
+  "functions": {
+    "api/messages.js": {
+      "memory": 256,
+      "maxDuration": 30
+    }
+  }
 }
