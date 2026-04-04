@@ -1496,14 +1496,14 @@ async function runSearch() {
   const totalResults = hasCategories ? cleanCats.length * 2 : 4;
 
   const today = todayLabel();
-  const searchQueries = hasCategories
-    ? cleanCats.map(c => `"London ${c} ${when} ${today}"`).join(', ')
-    : `"London things to do ${when} ${today}"${vibes.length ? `, "London ${vibes[0]} activities ${when}"` : ''}`;
+  const searchQuery = hasCategories
+    ? `London ${cleanCats.slice(0, 3).join(' ')} ${when} ${today}`
+    : `London things to do ${when} ${today}${vibes.length ? ' ' + vibes[0] : ''}`;
 
   const prompt = hasCategories
     ? `Today is ${today}. You are a London weekend activity recommender.
 
-STEP 1 — Search the web now. Run searches for: ${searchQueries}. Also search "London ${cleanCats[0]} events ${today}" to find what is actually open, running, or happening this specific weekend.
+STEP 1 — Search the web now with this single query: "${searchQuery}". Find what is actually open, running, or happening this specific weekend.
 
 STEP 2 — Based on what you find, for EACH of the ${cleanCats.length} categories below suggest exactly 2 real, current, specific places or activities that are actually open/on this weekend.
 
@@ -1524,7 +1524,7 @@ Return ONLY a JSON array of ${totalResults} objects, no markdown:
 
     : `Today is ${today}. You are a London weekend activity recommender.
 
-STEP 1 — Search the web now. Run searches for: ${searchQueries}. Find what is actually open, running, or happening in London this specific weekend.
+STEP 1 — Search the web now with this single query: "${searchQuery}". Find what is actually open, running, or happening in London this specific weekend.
 
 STEP 2 — Based on real search results, suggest exactly 4 specific places or activities that are genuinely on this weekend.
 
@@ -1904,7 +1904,7 @@ const API_ENDPOINT = '/api/messages';
 const WEB_SEARCH_TOOL = [{
   type: 'web_search_20250305',
   name: 'web_search',
-  max_uses: 4
+  max_uses: 1
 }];
 
 function todayLabel() {
