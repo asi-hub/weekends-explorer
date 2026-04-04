@@ -1945,9 +1945,11 @@ async function callClaude(prompt, maxTokens = 1800) {
   }
 
   const data = await res.json();
-  const raw = data.content.find(b => b.type === 'text')?.text || '[]';
+  const raw = (data.content.find(b => b.type === 'text')?.text || '[]').replace(/```json\n?|```\n?/g, '');
   console.log('[API] raw response (first 200):', raw.slice(0, 200));
-  return JSON.parse(raw.replace(/```json\n?|```\n?/g, '').trim());
+  const arrM = raw.match(/\[[\s\S]*\]/);
+  const objM = raw.match(/\{[\s\S]*\}/);
+  return JSON.parse(arrM ? arrM[0] : objM ? objM[0] : raw.trim());
 }
 
 async function callClaudeRaw(prompt, maxTokens = 1200) {
@@ -2039,8 +2041,12 @@ async function callClaudeSearch(prompt, maxTokens = 4000) {
   }
 
   console.log('[API] stream done, accumulated (first 300):', accumulated.slice(0, 300));
-  const clean = accumulated.replace(/```json\n?|```\n?/g, '').trim();
-  return JSON.parse(clean);
+  // Extract JSON array or object from anywhere in the response
+  const clean = accumulated.replace(/```json\n?|```\n?/g, '');
+  const arrMatch = clean.match(/\[[\s\S]*\]/);
+  const objMatch = clean.match(/\{[\s\S]*\}/);
+  const jsonStr = arrMatch ? arrMatch[0] : objMatch ? objMatch[0] : clean.trim();
+  return JSON.parse(jsonStr);
 }
 
 // ══════════════════════════════════════
