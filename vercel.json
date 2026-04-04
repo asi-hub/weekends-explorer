@@ -1,8 +1,7 @@
 {
   "functions": {
     "api/messages.js": {
-      "memory": 256,
-      "maxDuration": 30
+      "runtime": "edge"
     }
   }
 }
