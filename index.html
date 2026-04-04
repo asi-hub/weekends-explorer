@@ -191,7 +191,11 @@ body{background:var(--bg);font-family:'Instrument Sans',sans-serif;color:var(--n
 .badge-workshops{background:#eff6ff;color:#1d4ed8}
 .badge-daytrip{background:#e0f2fe;color:#0369a1}
 .badge-familyfun{background:#fefce8;color:#a16207}
-.rc-desc{font-size:.96rem;color:var(--muted);line-height:1.6;margin-bottom:.85rem}
+.rc-desc{font-size:.96rem;color:var(--muted);line-height:1.6;margin-bottom:.75rem}
+.rc-current{display:flex;align-items:flex-start;gap:.5rem;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid #bbf7d0;border-radius:10px;padding:.55rem .75rem;margin-bottom:.75rem;font-size:.82rem;color:#166534;line-height:1.5}
+.rc-current-icon{font-size:.95rem;flex-shrink:0;margin-top:.05rem}
+.rc-link{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--teal);text-decoration:none;font-weight:500;padding:.28rem .65rem;border-radius:999px;border:1px solid rgba(125,212,200,.4);transition:all .15s;white-space:nowrap}
+.rc-link:hover{background:var(--teal);color:var(--navy)}
 .rc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem}
 .meta-chip{display:flex;align-items:center;gap:4px;padding:.28rem .65rem;border-radius:999px;background:#f5f3ee;font-size:.86rem;color:var(--navy)}
 .rc-footer{display:flex;justify-content:space-between;align-items:center;gap:6px}
@@ -1516,7 +1520,7 @@ ${cleanCats.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 IMPORTANT: Use the category name EXACTLY as written above. Prioritise results found via web search — real venues with current opening info, events actually happening this weekend, real prices.
 
 Return ONLY a JSON array of ${totalResults} objects, no markdown:
-[{"name":"...","category":"exact name from list above","area":"...","description":"2 specific sentences explaining why this fits this family and what makes it special right now","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`
+[{"name":"...","category":"exact name from list above","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'},"currentInfo":"1 sentence: what is specifically on/happening there this weekend, e.g. exhibition name, market theme, event detail","link":"https://... direct URL to the venue, event page, or official site — must be a real URL found in your search"}]`
 
     : `Today is ${today}. You are a London weekend activity recommender.
 
@@ -1534,7 +1538,7 @@ ${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
 Prioritise results from web search — real venues with current info, events actually happening this weekend. No generic or potentially-closed suggestions.
 
 Return ONLY a JSON array of 4 objects, no markdown:
-[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family and what makes it special right now","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
+[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'},"currentInfo":"1 sentence: what is specifically on/happening there this weekend","link":"https://... direct URL to venue or event page — must be a real URL from your search"}]`;
 
   try {
     const maxTok = hasCategories ? Math.min(600 + cleanCats.length * 900, 6000) : 4000;
@@ -1647,7 +1651,7 @@ ${buildProfileContext()}
 ${kidCtx}
 
 Return ONLY a JSON array with 1 object, no markdown:
-[{"name":"...","category":"Event","area":"...","description":"2 specific sentences personalised to this family, mentioning real current details from your search","travel":"from ${profile.postcode || 'home'}","price":"...","time":"...","toddlerScore":${surpriseWithKid ? '1-5' : '0'}}]`;
+[{"name":"...","category":"Event","area":"...","description":"2 specific sentences personalised to this family","travel":"from ${profile.postcode || 'home'}","price":"...","time":"...","toddlerScore":${surpriseWithKid ? '1-5' : '0'},"currentInfo":"1 sentence: specific detail about this event this weekend — lineup, theme, what makes it special now","link":"https://... direct URL to event tickets or info page — must be real URL from your search"}]`;
 
   try {
     const parsed = await callClaudeSearch(prompt, 4000);
@@ -2071,9 +2075,10 @@ function renderResultCard(r, delay) {
       <span class="rc-badge ${badgeClass(r.category)}">${r.category}</span>
     </div>
     <div class="rc-desc">${r.description}</div>
+    ${r.currentInfo ? `<div class="rc-current"><span class="rc-current-icon">📅</span><span>${r.currentInfo}</span></div>` : ''}
     <div class="rc-meta">
       <span class="meta-chip">📍 ${r.area}</span>
-      <span class="meta-chip">🚇 ${r.travel}</span>
+      ${r.travel ? `<span class="meta-chip">🚇 ${r.travel}</span>` : ''}
       ${r.price ? `<span class="meta-chip">💷 ${r.price}</span>` : ''}
       ${r.time ? `<span class="meta-chip">⏱ ${r.time}</span>` : ''}
     </div>
@@ -2082,6 +2087,7 @@ function renderResultCard(r, delay) {
         ${r.toddlerScore ? `<span class="toddler-stars">${toddlerStars(r.toddlerScore)}</span> ${kidName}-friendly` : ''}
       </div>
       <div class="rc-actions">
+        ${r.link ? `<a class="rc-link" href="${r.link}" target="_blank" rel="noopener">More info ↗</a>` : ''}
         <button class="btn-been${alreadyVisited ? ' been' : ''}" onclick="toggleBeenThere(this,'${cardId}',JSON.parse(decodeURIComponent('${encoded}')))">${alreadyVisited ? '✓ Been there' : 'Been there?'}</button>
         <button class="btn-replace" title="Get a different suggestion" onclick="replaceCard(this,'${cardId}')">↻</button>
         <button class="btn-save${alreadySaved ? ' saved' : ''}" data-card-id="${cardId}" onclick="toggleSaveBtn(this,'${cardId}',JSON.parse(decodeURIComponent('${encoded}')))">${alreadySaved ? 'Saved ✓' : 'Save'}</button>
@@ -2267,7 +2273,7 @@ ${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
 MUST NOT suggest any of these already-shown places: ${shownNames.join(', ')}
 
 Return ONLY a JSON array with 1 object, no markdown:
-[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family and what makes it current/special right now","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
+[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'},"currentInfo":"1 sentence: what is specifically on/happening there this weekend","link":"https://... direct URL to venue or event page — must be a real URL from your search"}]`;
 
   try {
     const results = await callClaudeSearch(prompt, 2000);
