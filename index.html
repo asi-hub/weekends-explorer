@@ -947,7 +947,7 @@ function buildDatePills(containerId) {
   function nextWeekday(targetDow) {
     const d = new Date(today);
     let diff = targetDow - dow;
-    if (diff <= 0) diff += 7;
+    if (diff < 0) diff += 7;
     d.setDate(d.getDate() + diff);
     return d;
   }
