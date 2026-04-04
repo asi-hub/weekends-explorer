@@ -1491,8 +1491,17 @@ async function runSearch() {
   const hasCategories = cleanCats.length > 0;
   const totalResults = hasCategories ? cleanCats.length * 2 : 4;
 
+  const today = todayLabel();
+  const searchQueries = hasCategories
+    ? cleanCats.map(c => `"London ${c} ${when} ${today}"`).join(', ')
+    : `"London things to do ${when} ${today}"${vibes.length ? `, "London ${vibes[0]} activities ${when}"` : ''}`;
+
   const prompt = hasCategories
-    ? `You are a London weekend activity recommender. For EACH of the ${cleanCats.length} categories listed below, suggest exactly 2 specific places or activities.
+    ? `Today is ${today}. You are a London weekend activity recommender.
+
+STEP 1 — Search the web now. Run searches for: ${searchQueries}. Also search "London ${cleanCats[0]} events ${today}" to find what is actually open, running, or happening this specific weekend.
+
+STEP 2 — Based on what you find, for EACH of the ${cleanCats.length} categories below suggest exactly 2 real, current, specific places or activities that are actually open/on this weekend.
 
 FAMILY PROFILE:
 ${buildProfileContext()}
@@ -1504,13 +1513,16 @@ ${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
 CATEGORIES (provide 2 results for each, in this exact order):
 ${cleanCats.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
-IMPORTANT: Use the category name EXACTLY as written above in each result's "category" field.
-Pick genuinely specific places with real names. No generic suggestions.
+IMPORTANT: Use the category name EXACTLY as written above. Prioritise results found via web search — real venues with current opening info, events actually happening this weekend, real prices.
 
 Return ONLY a JSON array of ${totalResults} objects, no markdown:
-[{"name":"...","category":"exact name from list above","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`
+[{"name":"...","category":"exact name from list above","area":"...","description":"2 specific sentences explaining why this fits this family and what makes it special right now","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`
 
-    : `You are a London weekend activity recommender. Suggest exactly 4 specific places or activities.
+    : `Today is ${today}. You are a London weekend activity recommender.
+
+STEP 1 — Search the web now. Run searches for: ${searchQueries}. Find what is actually open, running, or happening in London this specific weekend.
+
+STEP 2 — Based on real search results, suggest exactly 4 specific places or activities that are genuinely on this weekend.
 
 FAMILY PROFILE:
 ${buildProfileContext()}
@@ -1519,14 +1531,14 @@ FILTERS: When: ${when} | Time: ${time} | Vibes: ${vibes.join(', ') || 'any'} | W
 
 ${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
 
-Pick genuinely specific places with real names. No generic suggestions. Match their profile closely.
+Prioritise results from web search — real venues with current info, events actually happening this weekend. No generic or potentially-closed suggestions.
 
 Return ONLY a JSON array of 4 objects, no markdown:
-[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
+[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family and what makes it special right now","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
 
   try {
-    const maxTok = hasCategories ? Math.min(400 + cleanCats.length * 700, 4000) : 1800;
-    const results = await callClaude(prompt, maxTok);
+    const maxTok = hasCategories ? Math.min(600 + cleanCats.length * 900, 6000) : 4000;
+    const results = await callClaudeSearch(prompt, maxTok);
     lastSearchResults = [...results];
     lastSearchFilters = { when, time, vibes: vibes.join(', '), cats: cats.join(', ') };
 
@@ -1602,8 +1614,14 @@ async function runSurprise() {
   const kidName = profile.childName || 'the child';
   const kidCtx = surpriseWithKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing, no children.';
 
+  const today = todayLabel();
+
   const prompt = surpriseType === 'day'
-    ? `You are a London weekend planner. Create one surprise day arc in one specific London neighbourhood.
+    ? `Today is ${today}. You are a London weekend planner.
+
+STEP 1 — Search the web now. Search for "London ${surpriseWhen} things to do ${today}" and "London hidden gems weekend ${today}" to find what is actually open and happening this specific weekend.
+
+STEP 2 — Using real search results, create one surprise day arc in one specific London neighbourhood that is genuinely interesting right now.
 
 FAMILY PROFILE:
 ${buildProfileContext()}
@@ -1612,12 +1630,16 @@ ${kidCtx}
 
 DATE: ${surpriseWhen}
 
-Pick a neighbourhood that genuinely surprises this family based on their profile — not obvious tourist areas. It should feel like a discovery.
+Pick a neighbourhood that genuinely surprises this family based on their profile — not obvious tourist areas. Use real places confirmed by your web search to be open this weekend.
 
 Return ONLY a JSON object, no markdown:
 {"title":"Evocative day title","area":"Specific neighbourhood, London","stops":[{"time":"9:30am","place":"Real place name","note":"1–2 sentences on what to do and why it fits this family"},{"time":"11:30am","place":"...","note":"..."},{"time":"1:30pm","place":"...","note":"..."},{"time":"3:30pm","place":"...","note":"..."}]}`
 
-    : `You are a London event recommender. Suggest one specific event happening on ${surpriseWhen}.
+    : `Today is ${today}. You are a London event recommender.
+
+STEP 1 — Search the web now. Search for "London events ${surpriseWhen} ${today}" and "London ${surpriseWithKid ? 'family ' : ''}events this weekend" to find real events actually happening.
+
+STEP 2 — From your search results, suggest one specific real event happening on ${surpriseWhen}.
 
 FAMILY PROFILE:
 ${buildProfileContext()}
@@ -1625,10 +1647,10 @@ ${buildProfileContext()}
 ${kidCtx}
 
 Return ONLY a JSON array with 1 object, no markdown:
-[{"name":"...","category":"Event","area":"...","description":"2 specific sentences personalised to this family","travel":"from ${profile.postcode || 'home'}","price":"...","time":"...","toddlerScore":${surpriseWithKid ? '1-5' : '0'}}]`;
+[{"name":"...","category":"Event","area":"...","description":"2 specific sentences personalised to this family, mentioning real current details from your search","travel":"from ${profile.postcode || 'home'}","price":"...","time":"...","toddlerScore":${surpriseWithKid ? '1-5' : '0'}}]`;
 
   try {
-    const parsed = await callClaude(prompt);
+    const parsed = await callClaudeSearch(prompt, 4000);
     let html = '';
     if (surpriseType === 'day') {
       html = renderArcCard(parsed, surpriseWithKid);
@@ -1875,6 +1897,20 @@ const CLAUDE_MODEL = 'claude-sonnet-4-5';
 // Always use /api/messages — proxied by Python (localhost) or Vercel serverless function (production).
 const API_ENDPOINT = '/api/messages';
 
+const WEB_SEARCH_TOOL = [{
+  type: 'web_search_20250305',
+  name: 'web_search',
+  max_uses: 4
+}];
+
+function todayLabel() {
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// callClaude — no web search (settings chat, profile edits)
 async function callClaude(prompt, maxTokens = 1800) {
   console.log('[API] callClaude model:', CLAUDE_MODEL, 'maxTokens:', maxTokens);
 
@@ -1941,6 +1977,41 @@ async function callClaudeRaw(prompt, maxTokens = 1200) {
 
   const data = await res.json();
   return data.content.find(b => b.type === 'text')?.text || '';
+}
+
+// callClaudeSearch — with web_search tool for activity discovery
+async function callClaudeSearch(prompt, maxTokens = 4000) {
+  console.log('[API] callClaudeSearch model:', CLAUDE_MODEL, '(web search enabled)');
+
+  let res;
+  try {
+    res = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: maxTokens,
+        tools: WEB_SEARCH_TOOL,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+  } catch (networkErr) {
+    console.error('[API] Network/CORS error:', networkErr);
+    throw new Error('Network error — ' + networkErr.message);
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error('[API] HTTP', res.status, body);
+    let msg = 'API error ' + res.status;
+    try { msg = JSON.parse(body).error?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  const raw = data.content.find(b => b.type === 'text')?.text || '[]';
+  console.log('[API] search response (first 300):', raw.slice(0, 300));
+  return JSON.parse(raw.replace(/```json\n?|```\n?/g, '').trim());
 }
 
 // ══════════════════════════════════════
@@ -2181,7 +2252,10 @@ async function replaceCard(btn, oldCardId) {
     .filter(Boolean);
 
   const filters = lastSearchFilters;
-  const prompt = `You are a London weekend activity recommender. Suggest exactly 1 specific place or activity as a fresh alternative.
+  const today = todayLabel();
+  const prompt = `Today is ${today}. You are a London weekend activity recommender. Suggest exactly 1 fresh alternative.
+
+STEP 1 — Search the web for "London ${filters.cats || filters.vibes || 'activities'} ${filters.when || 'this weekend'} ${today}" to find something real and current.
 
 FAMILY PROFILE:
 ${buildProfileContext()}
@@ -2193,10 +2267,10 @@ ${withKid ? 'CHILD INFO:\n' + buildKidContext() : 'Adults-only outing.'}
 MUST NOT suggest any of these already-shown places: ${shownNames.join(', ')}
 
 Return ONLY a JSON array with 1 object, no markdown:
-[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
+[{"name":"...","category":"...","area":"...","description":"2 specific sentences explaining why this fits this family and what makes it current/special right now","travel":"e.g. 20 min from ${profile.postcode || 'home'}","price":"e.g. Free or £8pp","time":"e.g. 2–3 hours","toddlerScore":${withKid ? '1-5' : '0'}}]`;
 
   try {
-    const results = await callClaude(prompt, 700);
+    const results = await callClaudeSearch(prompt, 2000);
     const r = results[0];
     if (!r) throw new Error('No result returned');
 
