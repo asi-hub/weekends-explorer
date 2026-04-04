@@ -1983,9 +1983,9 @@ async function callClaudeRaw(prompt, maxTokens = 1200) {
   return data.content.find(b => b.type === 'text')?.text || '';
 }
 
-// callClaudeSearch — with web_search tool for activity discovery
+// callClaudeSearch — streaming with web_search tool (prevents Edge timeout)
 async function callClaudeSearch(prompt, maxTokens = 4000) {
-  console.log('[API] callClaudeSearch model:', CLAUDE_MODEL, '(web search enabled)');
+  console.log('[API] callClaudeSearch STREAM model:', CLAUDE_MODEL);
 
   let res;
   try {
@@ -1995,6 +1995,7 @@ async function callClaudeSearch(prompt, maxTokens = 4000) {
       body: JSON.stringify({
         model: CLAUDE_MODEL,
         max_tokens: maxTokens,
+        stream: true,
         tools: WEB_SEARCH_TOOL,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -2012,10 +2013,34 @@ async function callClaudeSearch(prompt, maxTokens = 4000) {
     throw new Error(msg);
   }
 
-  const data = await res.json();
-  const raw = data.content.find(b => b.type === 'text')?.text || '[]';
-  console.log('[API] search response (first 300):', raw.slice(0, 300));
-  return JSON.parse(raw.replace(/```json\n?|```\n?/g, '').trim());
+  // Read SSE stream — accumulate only text_delta events
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let accumulated = '';
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // keep incomplete last line
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') break;
+      try {
+        const evt = JSON.parse(data);
+        if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+          accumulated += evt.delta.text;
+        }
+      } catch {}
+    }
+  }
+
+  console.log('[API] stream done, accumulated (first 300):', accumulated.slice(0, 300));
+  const clean = accumulated.replace(/```json\n?|```\n?/g, '').trim();
+  return JSON.parse(clean);
 }
 
 // ══════════════════════════════════════
